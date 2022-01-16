@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MDP Controller</string>
+    <string name="button_bluetooth">Connect to a device</string>
+    <string name="element_text">Device name</string>
+</resources>
