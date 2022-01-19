@@ -2,7 +2,7 @@ package com.example.mdpcontroller;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +12,6 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +24,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
     private class BluetoothOnClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            if(!parent.mBluetoothAdapter.isEnabled()) {
+            if(!BluetoothService.mBluetoothAdapter.isEnabled()) {
                 Toast.makeText(parent, "Bluetooth not on", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -36,6 +35,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             String info = parent.deviceList.get(itemPosition);
             final String address = info.substring(info.length() - 17);
             final String name = info.substring(0,info.length() - 18);
+            System.out.println(address);
 
             // Spawn a new thread to avoid blocking the GUI one
             new Thread()
@@ -43,38 +43,38 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                 @Override
                 public void run() {
                     boolean fail = false;
-
-                    BluetoothDevice device = parent.mBluetoothAdapter.getRemoteDevice(address);
+                    BluetoothService.stopSearch();
+                    BluetoothDevice device = BluetoothService.mBluetoothAdapter.getRemoteDevice(address);
 
                     try {
-                        parent.mBluetoothSocket = createBluetoothSocket(device);
+                        BluetoothService.mBluetoothSocket = createBluetoothSocket(device);
                     } catch (IOException e) {
                         fail = true;
                         Toast.makeText(parent, "Socket creation failed", Toast.LENGTH_SHORT).show();
                     }
                     // Establish the Bluetooth socket connection.
                     try {
-                        parent.mBluetoothSocket.connect();
+                        BluetoothService.mBluetoothSocket.connect();
                     } catch (IOException e) {
                         try {
                             fail = true;
-                            parent.mBluetoothSocket.close();
+                            System.out.println(e.getMessage());
+                            BluetoothService.mBluetoothSocket.close();
                         } catch (IOException e2) {
                             Toast.makeText(parent, "Socket creation failed", Toast.LENGTH_SHORT).show();
                         }
                     }
                     if(!fail) {
-                        System.out.println("Connected!");
-//                        mConnectedThread = new ConnectedThread(mBTSocket, mHandler);
-//                        mConnectedThread.start();
-//
-//                        mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, name)
-//                                .sendToTarget();
+                        System.out.println("Connected");
+                        Intent intent = new Intent("connection_established");
+                        intent.putExtra("device", name.equals("null") ? name : address);
+                        parent.sendBroadcast(intent);
                     } else {
                         System.out.println("Not Connected!");
                     }
                 }
             }.start();
+            parent.finish();
         }
     }
 
@@ -88,7 +88,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         public ViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
-            textView = (TextView) view.findViewById(R.id.textView);
+            textView = view.findViewById(R.id.textView);
         }
 
         public TextView getTextView() {
@@ -127,8 +127,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         try {
-            final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
-            return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
+            return device.createInsecureRfcommSocketToServiceRecord(BT_MODULE_UUID);
         } catch (Exception e) {
             System.out.println("Could not create connection");
         }

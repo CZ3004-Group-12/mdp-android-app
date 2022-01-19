@@ -7,13 +7,62 @@
     tools:context=".MainActivity" >
 
     <Button
-        android:id="@+id/button2"
-        android:layout_width="232dp"
-        android:layout_height="41dp"
+        android:id="@+id/button_connect"
+        android:layout_width="376dp"
+        android:layout_height="53dp"
         android:layout_marginTop="16dp"
-        android:onClick="connectBluetooth"
-        android:text="@string/button_bluetooth"
+        android:onClick="startDeviceList"
+        android:text="@string/button_bluetooth_unconnected"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ScrollView
+        android:id="@+id/SCROLLER_ID"
+        android:layout_width="409dp"
+        android:layout_height="169dp"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        android:background="@drawable/back"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.613">
+
+        <EditText
+            android:id="@+id/editTextTextMultiLine"
+            android:background="@android:color/transparent"
+            android:layout_marginLeft="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:focusable="false"
+            android:layout_marginStart="4dp" />
+    </ScrollView>
+
+    <EditText
+        android:id="@+id/editTextTextPersonName"
+        android:layout_width="255dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="196dp"
+        android:ems="10"
+        android:hint="Message"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:onClick="sendMessage"
+        android:text="Send"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/editTextTextPersonName" />
 </androidx.constraintlayout.widget.ConstraintLayout>

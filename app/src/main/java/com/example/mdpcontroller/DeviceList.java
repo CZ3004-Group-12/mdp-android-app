@@ -1,20 +1,15 @@
 package com.example.mdpcontroller;
 
-import android.Manifest;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,49 +17,26 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class DeviceList extends AppCompatActivity {
     public List<String> deviceList;
     public RecyclerView rv;
-    public BluetoothAdapter mBluetoothAdapter;
-    public BluetoothSocket mBluetoothSocket;
     private DeviceListAdapter deviceListAdapter;
-    private final String[] permissions = {
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_list);
-        if (hasPermissions()) {
-            initializeBluetooth();
-        } else {
-            ActivityCompat.requestPermissions(this, permissions, 1);
-        }
+        initializeDeviceList();
     }
 
-    private boolean hasPermissions() {
-        if (permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private void initializeBluetooth(){
+    private void initializeDeviceList(){
         // Lookup the recyclerview in activity layout
         rv = findViewById(R.id.rv);
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         // Register for broadcasts when a device is discovered.
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
-        System.out.println(mBluetoothAdapter.startDiscovery());
+        BluetoothService.startSearch();
 //        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 //
 //        List<String> s = new ArrayList<>();
@@ -100,6 +72,22 @@ public class DeviceList extends AppCompatActivity {
             }
         }
     };
+
+    public void toggleScan(View view){
+        if (BluetoothService.btStatus == BluetoothService.bluetoothStatus.SCANNING){
+            BluetoothService.stopSearch();
+            int resourceId = this.getResources().getIdentifier("@string/start_scan", "string", this.getPackageName());
+            ((TextView)view).setText(resourceId);
+        }
+        else if (BluetoothService.btStatus == BluetoothService.bluetoothStatus.UNCONNECTED){
+            deviceList.clear();
+            deviceListAdapter.notifyDataSetChanged();
+            BluetoothService.startSearch();
+            int resourceId = this.getResources().getIdentifier("@string/stop_scan", "string", this.getPackageName());
+            ((TextView)view).setText(resourceId);
+        }
+
+    }
 
     @Override
     protected void onDestroy() {
