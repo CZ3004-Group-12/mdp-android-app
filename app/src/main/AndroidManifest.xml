@@ -15,7 +15,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MDPController">
-        <activity android:name=".DeviceList" android:parentActivityName=".MainActivity"></activity>
+        <activity
+            android:name=".DeviceList"
+            android:label="Available Devices"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/DeviceList"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

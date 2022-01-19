@@ -15,6 +15,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -72,7 +73,11 @@ public class DeviceList extends AppCompatActivity {
         deviceList = new ArrayList<>();
         deviceListAdapter = new DeviceListAdapter(this);
         rv.setAdapter(deviceListAdapter);
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        rv.setLayoutManager(layoutManager);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rv.getContext(),
+                layoutManager.getOrientation());
+        rv.addItemDecoration(dividerItemDecoration);
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND.

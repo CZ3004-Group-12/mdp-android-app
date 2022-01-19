@@ -13,6 +13,6 @@
 -->
 
 <resources>
-    <dimen name="list_item_height">72dp</dimen>
-    <dimen name="margin_medium">5dp</dimen>
+    <dimen name="list_item_height">64dp</dimen>
+    <dimen name="margin_medium">8dp</dimen>
 </resources>
