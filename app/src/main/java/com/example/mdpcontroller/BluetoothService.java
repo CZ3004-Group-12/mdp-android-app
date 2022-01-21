@@ -12,16 +12,18 @@ import androidx.core.app.ActivityCompat;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BluetoothService {
     public static BluetoothAdapter mBluetoothAdapter;
     public static BluetoothSocket mBluetoothSocket;
     public ConnectedThread mConnectedThread;
     public Activity mContext;
-    public  enum bluetoothStatus {
+    public  enum BluetoothStatus {
         UNCONNECTED, SCANNING, CONNECTED, DISCONNECTED
     }
-    public static bluetoothStatus btStatus;
+    private static BluetoothStatus btStatus;
     private static  final String[] permissions = {
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_ADMIN,
@@ -29,8 +31,22 @@ public class BluetoothService {
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
 
+    // sends bt_status_changed broadcast when status is set
+    public static void setBtStatus(BluetoothStatus newStatus, Map<String, String> extras, Activity context) {
+        btStatus = newStatus;
+        Intent intent = new Intent("bt_status_changed");
+        for (String key: extras.keySet()){
+            intent.putExtra(key, extras.get(key));
+        }
+        context.sendBroadcast(intent);
+    }
+
+    public static BluetoothStatus getBtStatus(){
+        return btStatus;
+    }
+
     public static void initialize(Activity activity){
-        btStatus = bluetoothStatus.UNCONNECTED;
+        btStatus = BluetoothStatus.UNCONNECTED;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!hasPermissions(activity)) {
             ActivityCompat.requestPermissions(activity, permissions, 1);
@@ -50,21 +66,20 @@ public class BluetoothService {
 
     public static void stopSearch() {
         mBluetoothAdapter.cancelDiscovery();
-        btStatus = bluetoothStatus.UNCONNECTED;
+        btStatus = BluetoothStatus.UNCONNECTED;
     }
 
     public static void startSearch() {
         mBluetoothAdapter.startDiscovery();
-        btStatus = bluetoothStatus.SCANNING;
+        btStatus = BluetoothStatus.SCANNING;
     }
 
     public BluetoothService(Activity context){
         mContext = context;
     }
 
-    public void connected() {
+    public void startConnectedThread() {
         mConnectedThread = new ConnectedThread(mBluetoothSocket);
-        btStatus = bluetoothStatus.CONNECTED;
         mConnectedThread.start();
     }
 
@@ -138,6 +153,7 @@ public class BluetoothService {
         public void cancel() {
             try {
                 mmSocket.close();
+                setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<>(), mContext);
             } catch (IOException e) {
                 System.out.println("Could not close the connect socket " + e.getMessage());
             }

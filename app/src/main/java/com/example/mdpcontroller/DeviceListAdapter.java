@@ -9,14 +9,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.ViewHolder> {
-    private List<String> localDataSet;
+    private final List<String> localDataSet;
     private final View.OnClickListener mOnClickListener = new BluetoothOnClickListener();
     private final DeviceList parent;
     private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
@@ -66,9 +69,9 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     }
                     if(!fail) {
                         System.out.println("Connected");
-                        Intent intent = new Intent("connection_established");
-                        intent.putExtra("device", name.equals("null") ? name : address);
-                        parent.sendBroadcast(intent);
+                        Map<String, String> extra = new HashMap<>();
+                        extra.put("device", name.equals("null") ? name : address);
+                        BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.CONNECTED, extra, parent);
                     } else {
                         System.out.println("Not Connected!");
                     }
@@ -105,6 +108,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item

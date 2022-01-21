@@ -74,12 +74,12 @@ public class DeviceList extends AppCompatActivity {
     };
 
     public void toggleScan(View view){
-        if (BluetoothService.btStatus == BluetoothService.bluetoothStatus.SCANNING){
+        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.SCANNING){
             BluetoothService.stopSearch();
             int resourceId = this.getResources().getIdentifier("@string/start_scan", "string", this.getPackageName());
             ((TextView)view).setText(resourceId);
         }
-        else if (BluetoothService.btStatus == BluetoothService.bluetoothStatus.UNCONNECTED){
+        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
             deviceList.clear();
             deviceListAdapter.notifyDataSetChanged();
             BluetoothService.startSearch();
