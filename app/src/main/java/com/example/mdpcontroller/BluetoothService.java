@@ -47,6 +47,7 @@ public class BluetoothService {
         for (String key: extras.keySet()){
             intent.putExtra(key, extras.get(key));
         }
+        System.out.println("BtStatus changed to "+newStatus.toString());
         context.sendBroadcast(intent);
     }
 
@@ -55,7 +56,7 @@ public class BluetoothService {
     }
 
     public static void initialize(Activity activity){
-        btStatus = BluetoothStatus.UNCONNECTED;
+        setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<String, String>(), activity);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!hasPermissions(activity)) {
             ActivityCompat.requestPermissions(activity, permissions, 1);
@@ -192,7 +193,6 @@ public class BluetoothService {
         public void cancel() {
             try {
                 mmSocket.close();
-                setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<>(), mContext);
             } catch (IOException e) {
                 System.out.println("Could not close the connect socket " + e.getMessage());
             }

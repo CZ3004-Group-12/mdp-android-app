@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.xml.transform.Source;
+
 
 public class DeviceList extends AppCompatActivity {
     public List<String> deviceList;
@@ -46,23 +48,23 @@ public class DeviceList extends AppCompatActivity {
                 layoutManager.getOrientation());
         rv.addItemDecoration(dividerItemDecoration);
 
+        // Register for broadcasts when a device is discovered.
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(receiver, filter);
+
         if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
-            // Register for broadcasts when a device is discovered.
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(receiver, filter);
+            // No devices connect, search for devices
             BluetoothService.startSearch();
         }
         else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED){
+            // Device connected, display device and disconnect button
             String name = BluetoothService.mConnectedDevice.getName() + "\n" + BluetoothService.mConnectedDevice.getAddress();
             deviceList.clear();
             deviceList.add(name);
             deviceListAdapter.notifyItemInserted(deviceList.size());
             deviceListAdapter.setConnectedDeviceStr(true);
-//        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-//
-//        List<String> s = new ArrayList<>();
-//        for(BluetoothDevice bt : pairedDevices)
-//            s.add(bt.getName());
+            Button bt = findViewById(R.id.button);
+            bt.setText(R.string.disconnect_device);
         }
 
     }
@@ -73,8 +75,8 @@ public class DeviceList extends AppCompatActivity {
             String action = intent.getAction();
             String name;
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Discovery has found a device. Get the BluetoothDevice
-                // object and its info from the Intent.
+                // device found
+                // get BluetoothDevice from the intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 name = device.getName() + "\n" + device.getAddress();
                 System.out.println(name);
@@ -82,20 +84,21 @@ public class DeviceList extends AppCompatActivity {
                     deviceList.add(name);
                     deviceListAdapter.notifyItemInserted(deviceList.size());
                 }
-                // String deviceHardwareAddress = device.getAddress(); // MAC address
-
             }
         }
     };
 
     public void toggleScan(View view){
+        System.out.println("toggleScan");
         int resourceId = 0;
+        // Stop Scan
         if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.SCANNING){
             BluetoothService.stopSearch();
             BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.UNCONNECTED, new HashMap<String, String>(),this);
             resourceId = this.getResources().getIdentifier("@string/start_scan", "string", this.getPackageName());
 
         }
+        // Start Scan
         else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
             deviceList.clear();
             deviceListAdapter.notifyDataSetChanged();
@@ -104,6 +107,7 @@ public class DeviceList extends AppCompatActivity {
             resourceId = this.getResources().getIdentifier("@string/stop_scan", "string", this.getPackageName());
             ((TextView)view).setText(resourceId);
         }
+        // Disconnect Device
         else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED){
             TextView tv = findViewById(R.id.textViewDeviceConnected);
             tv.setText("");
@@ -114,14 +118,16 @@ public class DeviceList extends AppCompatActivity {
             deviceListAdapter.setConnectedDeviceStr(false);
         }
         ((TextView)view).setText(resourceId);
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        // Don't forget to unregister the ACTION_FOUND receiver.
-        unregisterReceiver(receiver);
+        try {
+            // Unregister listener
+            unregisterReceiver(receiver);
+        } catch (Exception e) {
+            // already unregistered
+        }
     }
 }

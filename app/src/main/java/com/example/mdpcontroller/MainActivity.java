@@ -19,17 +19,15 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private BluetoothService btService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        BluetoothService.initialize(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        BluetoothService.initialize(this);
-        btService = new BluetoothService(this);
-        registerReceiver(msgReceiver, new IntentFilter("message_received"));
-        registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
         ((TextView)findViewById(R.id.editTextTextMultiLine)).setMovementMethod(new ScrollingMovementMethod());
         ((ScrollView)findViewById(R.id.SCROLLER_ID)).fullScroll(View.FOCUS_DOWN);
     }
 
     public void btConnect_onPress(View view) {
+        btService = new BluetoothService(this);
         Intent intent = new Intent(this, DeviceList.class);
         startActivity(intent);
     }
@@ -52,6 +50,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                     + intent.getExtras().getString("message");
 
             ((TextView)findViewById(R.id.editTextTextMultiLine)).append(message);
+
+
         }
     };
 
@@ -70,6 +70,28 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             }
         }
     };
+
+    @Override
+    protected void onPause() {
+        try {
+            unregisterReceiver(msgReceiver);
+            unregisterReceiver(conReceiver);
+        } catch (Exception e) {
+            // already unregistered
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            registerReceiver(msgReceiver, new IntentFilter("message_received"));
+            registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
+        } catch (Exception e) {
+            // already registered
+        }
+    }
 
 
 
