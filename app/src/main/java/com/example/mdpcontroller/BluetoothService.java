@@ -2,11 +2,18 @@ package com.example.mdpcontroller;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.provider.Settings;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
 import java.io.IOException;
@@ -18,6 +25,7 @@ import java.util.Map;
 public class BluetoothService {
     public static BluetoothAdapter mBluetoothAdapter;
     public static BluetoothSocket mBluetoothSocket;
+    public static BluetoothDevice mConnectedDevice;
     public ConnectedThread mConnectedThread;
     public Activity mContext;
     public  enum BluetoothStatus {
@@ -30,6 +38,7 @@ public class BluetoothService {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
+
 
     // sends bt_status_changed broadcast when status is set
     public static void setBtStatus(BluetoothStatus newStatus, Map<String, String> extras, Activity context) {
@@ -51,6 +60,29 @@ public class BluetoothService {
         if (!hasPermissions(activity)) {
             ActivityCompat.requestPermissions(activity, permissions, 1);
         }
+        if(!mBluetoothAdapter.isEnabled())
+        {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            activity.startActivity(enableBtIntent);
+        }
+        LocationManager lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+        if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            // Build the alert dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            builder.setTitle("Location Services Not Active");
+            builder.setMessage("Please enable Location Services and GPS");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // Show location settings when the user acknowledges the alert dialog
+                    Intent enableLocIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    activity.startActivity(enableLocIntent);
+                }
+            });
+            Dialog alertDialog = builder.create();
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.show();
+        }
     }
 
     private static boolean hasPermissions(Activity activity) {
@@ -66,12 +98,10 @@ public class BluetoothService {
 
     public static void stopSearch() {
         mBluetoothAdapter.cancelDiscovery();
-        btStatus = BluetoothStatus.UNCONNECTED;
     }
 
     public static void startSearch() {
         mBluetoothAdapter.startDiscovery();
-        btStatus = BluetoothStatus.SCANNING;
     }
 
     public BluetoothService(Activity context){
@@ -85,6 +115,10 @@ public class BluetoothService {
 
     public void write(String message){
         mConnectedThread.write(message.getBytes());
+    }
+
+    public void disconnect() {
+        mConnectedThread.cancel();
     }
 
     private class ConnectedThread extends Thread {
@@ -130,9 +164,14 @@ public class BluetoothService {
                     mContext.sendBroadcast(intent);
                 } catch (IOException e) {
                     System.out.println("Input stream was disconnected " + e.getMessage());
+                    attemptReconnect();
                     break;
                 }
             }
+        }
+
+        public void attemptReconnect() {
+
         }
 
         // Call this from the main activity to send data to the remote device.

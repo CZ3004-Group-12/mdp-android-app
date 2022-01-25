@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,7 +15,10 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -31,17 +35,8 @@ public class DeviceList extends AppCompatActivity {
     }
 
     private void initializeDeviceList(){
-        // Lookup the recyclerview in activity layout
+        // setup recyclerview
         rv = findViewById(R.id.rv);
-        // Register for broadcasts when a device is discovered.
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver, filter);
-        BluetoothService.startSearch();
-//        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-//
-//        List<String> s = new ArrayList<>();
-//        for(BluetoothDevice bt : pairedDevices)
-//            s.add(bt.getName());
         deviceList = new ArrayList<>();
         deviceListAdapter = new DeviceListAdapter(this);
         rv.setAdapter(deviceListAdapter);
@@ -50,6 +45,26 @@ public class DeviceList extends AppCompatActivity {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rv.getContext(),
                 layoutManager.getOrientation());
         rv.addItemDecoration(dividerItemDecoration);
+
+        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
+            // Register for broadcasts when a device is discovered.
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(receiver, filter);
+            BluetoothService.startSearch();
+        }
+        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED){
+            String name = BluetoothService.mConnectedDevice.getName() + "\n" + BluetoothService.mConnectedDevice.getAddress();
+            deviceList.clear();
+            deviceList.add(name);
+            deviceListAdapter.notifyItemInserted(deviceList.size());
+            deviceListAdapter.setConnectedDeviceStr(true);
+//        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+//
+//        List<String> s = new ArrayList<>();
+//        for(BluetoothDevice bt : pairedDevices)
+//            s.add(bt.getName());
+        }
+
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND.
@@ -74,18 +89,31 @@ public class DeviceList extends AppCompatActivity {
     };
 
     public void toggleScan(View view){
+        int resourceId = 0;
         if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.SCANNING){
             BluetoothService.stopSearch();
-            int resourceId = this.getResources().getIdentifier("@string/start_scan", "string", this.getPackageName());
-            ((TextView)view).setText(resourceId);
+            BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.UNCONNECTED, new HashMap<String, String>(),this);
+            resourceId = this.getResources().getIdentifier("@string/start_scan", "string", this.getPackageName());
+
         }
         else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
             deviceList.clear();
             deviceListAdapter.notifyDataSetChanged();
             BluetoothService.startSearch();
-            int resourceId = this.getResources().getIdentifier("@string/stop_scan", "string", this.getPackageName());
+            BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.SCANNING, new HashMap<String, String>(),this);
+            resourceId = this.getResources().getIdentifier("@string/stop_scan", "string", this.getPackageName());
             ((TextView)view).setText(resourceId);
         }
+        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED){
+            TextView tv = findViewById(R.id.textViewDeviceConnected);
+            tv.setText("");
+            deviceList.clear();
+            deviceListAdapter.notifyDataSetChanged();
+            resourceId = this.getResources().getIdentifier("@string/start_scan", "string", this.getPackageName());
+            BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.UNCONNECTED, new HashMap<String, String>(),this);
+            deviceListAdapter.setConnectedDeviceStr(false);
+        }
+        ((TextView)view).setText(resourceId);
 
     }
 

@@ -22,6 +22,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
     private final List<String> localDataSet;
     private final View.OnClickListener mOnClickListener = new BluetoothOnClickListener();
     private final DeviceList parent;
+    private boolean connectedDeviceStr;
     private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
 
     private class BluetoothOnClickListener implements View.OnClickListener {
@@ -58,6 +59,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     // Establish the Bluetooth socket connection.
                     try {
                         BluetoothService.mBluetoothSocket.connect();
+                        BluetoothService.mConnectedDevice = device;
                     } catch (IOException e) {
                         try {
                             fail = true;
@@ -87,15 +89,20 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView textView;
+        private final TextView deviceConnectedTextView;
 
         public ViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
             textView = view.findViewById(R.id.textView);
+            deviceConnectedTextView = view.findViewById(R.id.textViewDeviceConnected);
         }
 
         public TextView getTextView() {
             return textView;
+        }
+        public TextView getDeviceConnectedTextView() {
+            return deviceConnectedTextView;
         }
     }
 
@@ -104,7 +111,12 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
      */
     public DeviceListAdapter(DeviceList parent) {
         localDataSet = parent.deviceList;
+        connectedDeviceStr = false;
         this.parent = parent;
+    }
+
+    public void setConnectedDeviceStr(boolean connectedDeviceStr) {
+        this.connectedDeviceStr = connectedDeviceStr;
     }
 
     // Create new views (invoked by the layout manager)
@@ -127,6 +139,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         viewHolder.getTextView().setText(localDataSet.get(position));
+        if (connectedDeviceStr)viewHolder.getDeviceConnectedTextView().setText(R.string.connected);
     }
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {

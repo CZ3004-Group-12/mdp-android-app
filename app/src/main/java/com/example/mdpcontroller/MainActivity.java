@@ -30,17 +30,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     }
 
     public void btConnect_onPress(View view) {
-        // Enums cannot be used in a switch statement, chained if statements are required
-        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED) {
-            Intent intent = new Intent(this, DeviceList.class);
-            startActivity(intent);
-        }
-        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
-            // reconnect, possibly make this automatic
-        }
-        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
-            // disconnect and search again
-        }
+        Intent intent = new Intent(this, DeviceList.class);
+        startActivity(intent);
     }
 
     public void sendMessage(View view) {
@@ -67,12 +58,19 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     // Create a BroadcastReceiver for bt_status_changed.
     private final BroadcastReceiver conReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-            btService.startConnectedThread();
             Button bt = findViewById(R.id.button_connect);
-            String devName = intent.getStringExtra("device");
-            bt.setText(String.format(getResources().getString(R.string.button_bluetooth_connected), devName));
-
+            if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
+                btService.startConnectedThread();
+                String devName = intent.getStringExtra("device");
+                bt.setText(String.format(getResources().getString(R.string.button_bluetooth_connected), devName));
+            }
+            else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED) {
+                bt.setText(R.string.button_bluetooth_unconnected);
+                btService.disconnect();
+            }
         }
     };
+
+
 
 }
