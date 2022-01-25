@@ -17,6 +17,7 @@ import java.util.Calendar;
 
 public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private BluetoothService btService;
+    private BluetoothService.BluetoothLostReceiver btLostReceiver, btLostReceiver2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         BluetoothService.initialize(this);
@@ -68,6 +69,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                 bt.setText(R.string.button_bluetooth_unconnected);
                 btService.disconnect();
             }
+            else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
+                String devName = intent.getStringExtra("device");
+                bt.setText(String.format(getResources().getString(R.string.button_bluetooth_disconnected), devName));
+            }
         }
     };
 
@@ -76,6 +81,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         try {
             unregisterReceiver(msgReceiver);
             unregisterReceiver(conReceiver);
+            unregisterReceiver(btLostReceiver);
+            unregisterReceiver(btLostReceiver2);
         } catch (Exception e) {
             // already unregistered
         }
@@ -88,6 +95,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         try {
             registerReceiver(msgReceiver, new IntentFilter("message_received"));
             registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
+            btLostReceiver = new BluetoothService.BluetoothLostReceiver(this);
+            registerReceiver(btLostReceiver, new IntentFilter("android.bluetooth.device.action.ACL_DISCONNECTED"));
+            btLostReceiver2 = new BluetoothService.BluetoothLostReceiver(this);
+            registerReceiver(btLostReceiver2, new IntentFilter("device_disconnected"));
         } catch (Exception e) {
             // already registered
         }

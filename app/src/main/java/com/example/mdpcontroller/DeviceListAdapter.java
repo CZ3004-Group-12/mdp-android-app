@@ -23,7 +23,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
     private final View.OnClickListener mOnClickListener = new BluetoothOnClickListener();
     private final DeviceList parent;
     private boolean connectedDeviceStr;
-    private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
+
 
     private class BluetoothOnClickListener implements View.OnClickListener {
         @Override
@@ -42,43 +42,8 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             System.out.println(address);
 
             // Spawn a new thread to avoid blocking the GUI one
-            new Thread()
-            {
-                @Override
-                public void run() {
-                    boolean fail = false;
-                    BluetoothService.stopSearch();
-                    BluetoothDevice device = BluetoothService.mBluetoothAdapter.getRemoteDevice(address);
+            BluetoothService.connect(address, name, parent);
 
-                    try {
-                        BluetoothService.mBluetoothSocket = createBluetoothSocket(device);
-                    } catch (IOException e) {
-                        fail = true;
-                        Toast.makeText(parent, "Socket creation failed", Toast.LENGTH_SHORT).show();
-                    }
-                    // Establish the Bluetooth socket connection.
-                    try {
-                        BluetoothService.mBluetoothSocket.connect();
-                        BluetoothService.mConnectedDevice = device;
-                    } catch (IOException e) {
-                        try {
-                            fail = true;
-                            System.out.println(e.getMessage());
-                            BluetoothService.mBluetoothSocket.close();
-                        } catch (IOException e2) {
-                            Toast.makeText(parent, "Socket creation failed", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    if(!fail) {
-                        System.out.println("Connected");
-                        Map<String, String> extra = new HashMap<>();
-                        extra.put("device", name.equals("null") ? name : address);
-                        BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.CONNECTED, extra, parent);
-                    } else {
-                        System.out.println("Not Connected!");
-                    }
-                }
-            }.start();
             parent.finish();
         }
     }
@@ -142,14 +107,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         if (connectedDeviceStr)viewHolder.getDeviceConnectedTextView().setText(R.string.connected);
     }
 
-    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
-        try {
-            return device.createInsecureRfcommSocketToServiceRecord(BT_MODULE_UUID);
-        } catch (Exception e) {
-            System.out.println("Could not create connection");
-        }
-        return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
-    }
+
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override

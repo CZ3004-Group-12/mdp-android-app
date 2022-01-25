@@ -2,6 +2,7 @@
     <string name="app_name">MDP Controller</string>
     <string name="button_bluetooth_unconnected">Connect to a device</string>
     <string name="button_bluetooth_connected">Connected to %1$s</string>
+    <string name="button_bluetooth_disconnected">Trying to reconnect to %1$s…</string>
     <string name="disconnect_device">Disconnect device</string>
     <string name="element_text">Device name</string>
     <string name="stop_scan">Stop scan</string>

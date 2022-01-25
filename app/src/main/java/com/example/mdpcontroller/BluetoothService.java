@@ -6,12 +6,14 @@ import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.provider.Settings;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -21,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class BluetoothService {
     public static BluetoothAdapter mBluetoothAdapter;
@@ -38,6 +41,9 @@ public class BluetoothService {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
+    private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
+    private static final int MAX_RECONNECT_RETRIES = 5;
+
 
 
     // sends bt_status_changed broadcast when status is set
@@ -58,14 +64,20 @@ public class BluetoothService {
     public static void initialize(Activity activity){
         setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<String, String>(), activity);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        // Request permissions
         if (!hasPermissions(activity)) {
             ActivityCompat.requestPermissions(activity, permissions, 1);
         }
+
+        // Request to turn on bluetooth
         if(!mBluetoothAdapter.isEnabled())
         {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             activity.startActivity(enableBtIntent);
         }
+
+        // Request to turn on location
         LocationManager lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
         if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
@@ -84,6 +96,8 @@ public class BluetoothService {
             alertDialog.setCanceledOnTouchOutside(false);
             alertDialog.show();
         }
+
+        //
     }
 
     private static boolean hasPermissions(Activity activity) {
@@ -120,6 +134,96 @@ public class BluetoothService {
 
     public void disconnect() {
         mConnectedThread.cancel();
+        mConnectedDevice = null;
+    }
+
+    public static void connect(String address, String name, Activity context) {
+        new Thread()
+        {
+            @Override
+            public void run() {
+                boolean fail = false;
+                BluetoothService.stopSearch();
+                BluetoothDevice device = BluetoothService.mBluetoothAdapter.getRemoteDevice(address);
+
+                try {
+                    BluetoothService.mBluetoothSocket = createBluetoothSocket(device);
+                } catch (IOException e) {
+                    fail = true;
+                    context.runOnUiThread(() -> Toast.makeText(context, "Socket creation failed", Toast.LENGTH_SHORT).show());
+                }
+                // Establish the Bluetooth socket connection.
+                try {
+                    BluetoothService.mBluetoothSocket.connect();
+                    BluetoothService.mConnectedDevice = device;
+                } catch (IOException e) {
+                    try {
+                        fail = true;
+                        System.out.println(e.getMessage());
+                        BluetoothService.mBluetoothSocket.close();
+                    } catch (IOException e2) {
+                        context.runOnUiThread(() -> Toast.makeText(context, "Socket creation failed", Toast.LENGTH_SHORT).show());
+                    }
+                }
+                if(!fail) {
+                    context.runOnUiThread(() -> Toast.makeText(context, "Connected!", Toast.LENGTH_SHORT).show());
+                    Map<String, String> extra = new HashMap<>();
+                    extra.put("device", !name.equals("null") ? name : address);
+                    BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.CONNECTED, extra, context);
+                } else {
+                    context.runOnUiThread(() -> Toast.makeText(context, "Connection Failed", Toast.LENGTH_SHORT).show());
+                }
+            }
+        }.start();
+    }
+
+    private static BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+        try {
+            return device.createInsecureRfcommSocketToServiceRecord(BT_MODULE_UUID);
+        } catch (Exception e) {
+            System.out.println("Could not create connection");
+        }
+        return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
+    }
+
+    public static class BluetoothLostReceiver extends BroadcastReceiver {
+
+        Activity main;
+
+        public BluetoothLostReceiver(Activity main) {
+            super();
+            this.main = main;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if(mConnectedDevice != null)
+            {
+                Map<String, String> extra = new HashMap<>();
+                extra.put("device", mConnectedDevice.getName().equals("null") ? mConnectedDevice.getName() : mConnectedDevice.getAddress());
+                setBtStatus(BluetoothStatus.DISCONNECTED, extra, main);
+                main.runOnUiThread(() -> Toast.makeText(context, "Connection lost! Attempting to reconnect...", Toast.LENGTH_SHORT).show());
+                if(BluetoothService.mConnectedDevice != null){
+                    for (int i=0; i<MAX_RECONNECT_RETRIES; i++){
+                        if (btStatus == BluetoothStatus.CONNECTED) return;
+                        try {
+                            connect(mConnectedDevice.getAddress(), mConnectedDevice.getName(), main);
+                        } catch (Exception e) {
+                            System.out.println("Reconnect attempt " + i + " failed");
+                        }
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                }
+                System.out.println("Reconnect failed");
+                setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<>(), (Activity) context);
+            }
+        }
     }
 
     private class ConnectedThread extends Thread {
@@ -165,14 +269,11 @@ public class BluetoothService {
                     mContext.sendBroadcast(intent);
                 } catch (IOException e) {
                     System.out.println("Input stream was disconnected " + e.getMessage());
-                    attemptReconnect();
+                    Intent intent = new Intent("device_disconnected");
+                    mContext.sendBroadcast(intent);
                     break;
                 }
             }
-        }
-
-        public void attemptReconnect() {
-
         }
 
         // Call this from the main activity to send data to the remote device.
