@@ -1,5 +1,6 @@
 package com.example.mdpcontroller;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,6 +28,7 @@ import javax.xml.transform.Source;
 public class DeviceList extends AppCompatActivity {
     public List<String> deviceList;
     public RecyclerView rv;
+    public BluetoothService serverBtService;
     private DeviceListAdapter deviceListAdapter;
 
     @Override
@@ -38,6 +40,7 @@ public class DeviceList extends AppCompatActivity {
 
     private void initializeDeviceList(){
         // setup recyclerview
+        serverBtService = new BluetoothService(this);
         rv = findViewById(R.id.rv);
         deviceList = new ArrayList<>();
         deviceListAdapter = new DeviceListAdapter(this);
@@ -55,6 +58,13 @@ public class DeviceList extends AppCompatActivity {
         if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
             // No devices connect, search for devices
             BluetoothService.startSearch();
+            BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.SCANNING, new HashMap<>(), this);
+            // make device discoverable
+            int requestCode = 1;
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            this.startActivityForResult(discoverableIntent, requestCode);
+            serverBtService.serverStartListen(this);
         }
         else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED){
             // Device connected, display device and disconnect button
@@ -66,7 +76,6 @@ public class DeviceList extends AppCompatActivity {
             Button bt = findViewById(R.id.button);
             bt.setText(R.string.disconnect_device);
         }
-
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND.

@@ -1,8 +1,5 @@
 package com.example.mdpcontroller;
 
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,11 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.ViewHolder> {
     private final List<String> localDataSet;
@@ -42,8 +35,8 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             System.out.println(address);
 
             // Spawn a new thread to avoid blocking the GUI one
-            BluetoothService.connect(address, name, parent);
-
+            parent.serverBtService.clientConnect(address, name, parent);
+            parent.serverBtService.serverStopListen();
             parent.finish();
         }
     }
