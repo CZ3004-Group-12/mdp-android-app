@@ -50,13 +50,7 @@ public class DeviceList extends AppCompatActivity {
                 layoutManager.getOrientation());
         rv.addItemDecoration(dividerItemDecoration);
 
-        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED ||
-                BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED){
-            // No devices connect, search for devices
-            BluetoothService.startSearch();
-            BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.SCANNING, new HashMap<>(), this);
-        }
-        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED){
+        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED){
             // Device connected, display device and disconnect button
             String name = BluetoothService.mConnectedDevice.getName() + "\n" + BluetoothService.mConnectedDevice.getAddress();
             deviceList.clear();
@@ -65,6 +59,10 @@ public class DeviceList extends AppCompatActivity {
             deviceListAdapter.setConnectedDeviceStr(true);
             Button bt = findViewById(R.id.button);
             bt.setText(R.string.disconnect_device);
+        } else {
+            // No devices connected, search for devices
+            BluetoothService.startSearch();
+            BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.SCANNING, new HashMap<>(), this);
         }
     }
 
@@ -111,7 +109,8 @@ public class DeviceList extends AppCompatActivity {
         }
         // Start Scan
         else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED ||
-                BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED){
+                BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED ||
+                BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTING){
             deviceList.clear();
             deviceListAdapter.notifyDataSetChanged();
             BluetoothService.startSearch();

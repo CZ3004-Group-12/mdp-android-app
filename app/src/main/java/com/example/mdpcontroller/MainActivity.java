@@ -98,13 +98,11 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             Button bt = findViewById(R.id.button_connect);
-            System.out.println("on receive");
             if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTING) {
                 btService.serverStopListen();
                 btService.clientConnect(intent.getStringExtra("address"),
                         intent.getStringExtra("name"),
                         main);
-                System.out.println("Fin");
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
                 btService.startConnectedThread();

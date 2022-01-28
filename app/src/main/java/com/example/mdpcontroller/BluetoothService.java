@@ -141,10 +141,8 @@ public class BluetoothService {
     }
 
     public void clientConnect(String address, String name, Activity context) {
-        if (mClientThread == null) {
-            mClientThread = new ConnectAsClientThread(address, name, context);
-            mClientThread.start();
-        }
+        mClientThread = new ConnectAsClientThread(address, name, context);
+        mClientThread.start();
     }
 
     public void serverStartListen(Activity context) {
@@ -189,6 +187,7 @@ public class BluetoothService {
 
         @Override
         public void run() {
+            System.out.println("starts");
             boolean fail = false;
             BluetoothService.stopSearch();
             BluetoothDevice device = BluetoothService.mBluetoothAdapter.getRemoteDevice(address);
@@ -216,6 +215,7 @@ public class BluetoothService {
                     context.sendBroadcast(intent);
                 }
             }
+            System.out.println("ends");
             if(!fail) {
                 Intent intent = new Intent("message_received");
                 intent.putExtra("message", "Connected!");
@@ -227,6 +227,8 @@ public class BluetoothService {
                 Intent intent = new Intent("message_received");
                 intent.putExtra("message", "Connection Failed");
                 context.sendBroadcast(intent);
+                Map<String, String> extra = new HashMap<>();
+                BluetoothService.setBtStatus(BluetoothStatus.UNCONNECTED, extra, context);
             }
         }
     }
@@ -266,6 +268,9 @@ public class BluetoothService {
                     String address = socket.getRemoteDevice().getAddress();
                     Map<String, String> extra = new HashMap<>();
                     extra.put("device", !name.equals("null") ? name : address);
+                    Intent intent = new Intent("message_received");
+                    intent.putExtra("message", "Connected!");
+                    context.sendBroadcast(intent);
                     BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.CONNECTED, extra, context);
                     try {
                         mmServerSocket.close();
@@ -372,29 +377,30 @@ public class BluetoothService {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-
-            Intent intent2 = new Intent("message_received");
-            intent2.putExtra("message", "Connection lost, attempting to reconnect...");
-            context.sendBroadcast(intent2);
-            if(getBtStatus() == BluetoothStatus.DISCONNECTED && mConnectedDevice != null)
-            {
+            if (getBtStatus() == BluetoothStatus.DISCONNECTED) {
+                Intent intent2 = new Intent("message_received");
                 if (RECONNECT_AS_CLIENT){
-                    for (int i=0; i<MAX_RECONNECT_RETRIES; i++){
-                        if (btStatus == BluetoothStatus.CONNECTED) return;
-                        try {
-                            clientConnect(mConnectedDevice.getAddress(), mConnectedDevice.getName(), main);
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
-                        try {
-                            intent2 = new Intent("message_received");
-                            intent2.putExtra("message", "Reconnect attempt " + i + " failed");
-                            context.sendBroadcast(intent2);
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                            System.out.println(e.getMessage());
+                    intent2.putExtra("message", "Connection lost, attempting to reconnect...");
+                    context.sendBroadcast(intent2);
+                    if(getBtStatus() == BluetoothStatus.DISCONNECTED && mConnectedDevice != null) {
+                        for (int i = 0; i < MAX_RECONNECT_RETRIES; i++) {
+                            if (btStatus == BluetoothStatus.CONNECTED) return;
+                            try {
+                                clientConnect(mConnectedDevice.getAddress(), mConnectedDevice.getName(), main);
+                            } catch (Exception e) {
+                                System.out.println(e.getMessage());
+                            }
+                            try {
+                                intent2 = new Intent("message_received");
+                                intent2.putExtra("message", "Reconnect attempt " + i + " failed");
+                                context.sendBroadcast(intent2);
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                System.out.println(e.getMessage());
+                            }
                         }
                     }
+                    // Max tries elapsed
                     intent2 = new Intent("message_received");
                     intent2.putExtra("message", "Reconnect failed");
                     context.sendBroadcast(intent2);
@@ -402,9 +408,10 @@ public class BluetoothService {
                 }
                 else {
                     // reconnect as server
+                    intent2.putExtra("message", "Connection lost, making device discoverable...");
+                    context.sendBroadcast(intent2);
                     serverStartListen(main);
                 }
-
             }
         }
     }
