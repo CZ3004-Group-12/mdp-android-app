@@ -103,21 +103,27 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                 btService.clientConnect(intent.getStringExtra("address"),
                         intent.getStringExtra("name"),
                         main);
+                bt.setText(getResources().getString(R.string.button_bluetooth_connecting));
+                bt.setBackgroundColor(getResources().getColor(R.color.teal_200));
+
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
                 btService.startConnectedThread();
                 btService.serverStopListen();
                 String devName = intent.getStringExtra("device");
                 bt.setText(String.format(getResources().getString(R.string.button_bluetooth_connected), devName));
+                bt.setBackgroundColor(getResources().getColor(R.color.green_500));
 
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED) {
-                bt.setText(R.string.button_bluetooth_unconnected);
                 btService.disconnect();
                 btService.serverStartListen(main);
+                bt.setText(R.string.button_bluetooth_unconnected);
+                bt.setBackgroundColor(getResources().getColor(R.color.purple_200));
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
                 bt.setText(getResources().getString(R.string.button_bluetooth_disconnected));
+                bt.setBackgroundColor(getResources().getColor(R.color.orange_500));
             }
         }
     };
