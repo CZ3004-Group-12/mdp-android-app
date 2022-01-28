@@ -29,13 +29,11 @@ public class BluetoothService {
     public static BluetoothAdapter mBluetoothAdapter;
     public static BluetoothSocket mBluetoothSocket;
     public static BluetoothDevice mConnectedDevice;
-    public ConnectedThread mConnectedThread;
-    public AcceptThread mAcceptThread;
-    public ConnectAsClientThread mClientThread;
-    public Activity mContext;
-    public  enum BluetoothStatus {
+    public static final boolean RECONNECT_AS_CLIENT = false;
+    public enum BluetoothStatus {
         UNCONNECTED, SCANNING, CONNECTING, CONNECTED, DISCONNECTED
     }
+
     private static BluetoothStatus btStatus;
     private static  final String[] permissions = {
             Manifest.permission.BLUETOOTH,
@@ -46,6 +44,10 @@ public class BluetoothService {
     private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
     private static final int MAX_RECONNECT_RETRIES = 5;
     private static final String NAME = "MDP_Group_12_Tablet";
+    public ConnectedThread mConnectedThread;
+    public AcceptThread mAcceptThread;
+    public ConnectAsClientThread mClientThread;
+    public Activity mContext;
 
 
 
@@ -168,49 +170,6 @@ public class BluetoothService {
         return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
     }
 
-    public class BluetoothLostReceiver extends BroadcastReceiver {
-
-        Activity main;
-
-        public BluetoothLostReceiver(Activity main) {
-            super();
-            this.main = main;
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            if(getBtStatus() == BluetoothStatus.DISCONNECTED && mConnectedDevice != null)
-            {
-                Intent intent2 = new Intent("message_received");
-                intent2.putExtra("message", "Connection lost, attempting to reconnect...");
-                context.sendBroadcast(intent2);
-                if(BluetoothService.mConnectedDevice != null){
-                    for (int i=0; i<MAX_RECONNECT_RETRIES; i++){
-                        if (btStatus == BluetoothStatus.CONNECTED) return;
-                        try {
-                            clientConnect(mConnectedDevice.getAddress(), mConnectedDevice.getName(), main);
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
-                        try {
-                            intent2 = new Intent("message_received");
-                            intent2.putExtra("message", "Reconnect attempt " + i + " failed");
-                            context.sendBroadcast(intent2);
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                            System.out.println(e.getMessage());
-                        }
-                    }
-                }
-                intent2 = new Intent("message_received");
-                intent2.putExtra("message", "Reconnect failed");
-                context.sendBroadcast(intent2);
-                setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<>(), (Activity) context);
-            }
-        }
-    }
-
     private static class ConnectAsClientThread extends Thread {
         public Activity context;
         public String name, address;
@@ -302,7 +261,6 @@ public class BluetoothService {
                     BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.CONNECTED, extra, context);
                     try {
                         mmServerSocket.close();
-                        context.finish();
                     } catch (IOException e) {
                         System.out.println(e.getMessage());;
                     }
@@ -390,6 +348,50 @@ public class BluetoothService {
                 mmSocket.close();
             } catch (IOException e) {
                 System.out.println("Could not close the connect socket " + e.getMessage());
+            }
+        }
+    }
+
+    // Receiver for DEVICE_DISCONNECTED, automatically tries to reconnect as client
+    public class BluetoothLostReceiver extends BroadcastReceiver {
+
+        Activity main;
+
+        public BluetoothLostReceiver(Activity main) {
+            super();
+            this.main = main;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if(getBtStatus() == BluetoothStatus.DISCONNECTED && mConnectedDevice != null)
+            {
+                Intent intent2 = new Intent("message_received");
+                intent2.putExtra("message", "Connection lost, attempting to reconnect...");
+                context.sendBroadcast(intent2);
+                if(BluetoothService.mConnectedDevice != null){
+                    for (int i=0; i<MAX_RECONNECT_RETRIES; i++){
+                        if (btStatus == BluetoothStatus.CONNECTED) return;
+                        try {
+                            clientConnect(mConnectedDevice.getAddress(), mConnectedDevice.getName(), main);
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                        try {
+                            intent2 = new Intent("message_received");
+                            intent2.putExtra("message", "Reconnect attempt " + i + " failed");
+                            context.sendBroadcast(intent2);
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                }
+                intent2 = new Intent("message_received");
+                intent2.putExtra("message", "Reconnect failed");
+                context.sendBroadcast(intent2);
+                setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<>(), (Activity) context);
             }
         }
     }

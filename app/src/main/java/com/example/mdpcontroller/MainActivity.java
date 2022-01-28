@@ -65,8 +65,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         registerReceiver(msgReceiver, new IntentFilter("message_received"));
         conReceiver = new BtStatusChangedReceiver(this);
         registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
-        btLostReceiver = btService.new BluetoothLostReceiver(this);
-        registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
+        if (BluetoothService.RECONNECT_AS_CLIENT) {
+            btLostReceiver = btService.new BluetoothLostReceiver(this);
+            registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
+        }
     }
 
     //BlueTooth
@@ -86,13 +88,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                     + intent.getExtras().getString("message");
 
             ((TextView)findViewById(R.id.btMessageTextView)).append(message);
-
-            // TODO: REMOVE THIS ONCE DEBUGGED
-            try {
-                btService.write("Echo: " + message);
-            } catch(Exception e) {
-                System.out.println(e.getMessage());
-            }
         }
     };
 
@@ -143,7 +138,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         super.onDestroy();
         unregisterReceiver(msgReceiver);
         unregisterReceiver(conReceiver);
-        unregisterReceiver(btLostReceiver);
+        if (BluetoothService.RECONNECT_AS_CLIENT) unregisterReceiver(btLostReceiver);
     }
 
 
