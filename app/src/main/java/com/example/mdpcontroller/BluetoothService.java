@@ -148,6 +148,13 @@ public class BluetoothService {
     }
 
     public void serverStartListen(Activity context) {
+        if(mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE)
+        {
+            // make device discoverable
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            context.startActivityForResult(discoverableIntent, 1);
+        }
         if (mAcceptThread == null){
             mAcceptThread = new AcceptThread(context);
             mAcceptThread.start();
@@ -254,6 +261,7 @@ public class BluetoothService {
                     // A connection was accepted. Perform work associated with
                     // the connection in a separate thread.
                     mBluetoothSocket = socket;
+                    mConnectedDevice = socket.getRemoteDevice();
                     String name = socket.getRemoteDevice().getName();
                     String address = socket.getRemoteDevice().getAddress();
                     Map<String, String> extra = new HashMap<>();
@@ -365,12 +373,12 @@ public class BluetoothService {
         @Override
         public void onReceive(Context context, Intent intent) {
 
+            Intent intent2 = new Intent("message_received");
+            intent2.putExtra("message", "Connection lost, attempting to reconnect...");
+            context.sendBroadcast(intent2);
             if(getBtStatus() == BluetoothStatus.DISCONNECTED && mConnectedDevice != null)
             {
-                Intent intent2 = new Intent("message_received");
-                intent2.putExtra("message", "Connection lost, attempting to reconnect...");
-                context.sendBroadcast(intent2);
-                if(BluetoothService.mConnectedDevice != null){
+                if (RECONNECT_AS_CLIENT){
                     for (int i=0; i<MAX_RECONNECT_RETRIES; i++){
                         if (btStatus == BluetoothStatus.CONNECTED) return;
                         try {
@@ -387,11 +395,16 @@ public class BluetoothService {
                             System.out.println(e.getMessage());
                         }
                     }
+                    intent2 = new Intent("message_received");
+                    intent2.putExtra("message", "Reconnect failed");
+                    context.sendBroadcast(intent2);
+                    setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<>(), (Activity) context);
                 }
-                intent2 = new Intent("message_received");
-                intent2.putExtra("message", "Reconnect failed");
-                context.sendBroadcast(intent2);
-                setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<>(), (Activity) context);
+                else {
+                    // reconnect as server
+                    serverStartListen(main);
+                }
+
             }
         }
     }

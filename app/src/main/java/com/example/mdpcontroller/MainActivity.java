@@ -54,26 +54,21 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         tabViewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(tabViewPager);
 
-        // make device discoverable
-        int requestCode = 1;
-        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-        this.startActivityForResult(discoverableIntent, requestCode);
+        // Make device discoverable and accept connections
         btService.serverStartListen(this);
 
         // register receivers
         registerReceiver(msgReceiver, new IntentFilter("message_received"));
         conReceiver = new BtStatusChangedReceiver(this);
         registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
-        if (BluetoothService.RECONNECT_AS_CLIENT) {
-            btLostReceiver = btService.new BluetoothLostReceiver(this);
-            registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
-        }
+        btLostReceiver = btService.new BluetoothLostReceiver(this);
+        registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
     }
 
     //BlueTooth
     public void btConnect_onPress(View view) {
         Intent intent = new Intent(this, DeviceList.class);
+        btService.serverStartListen(this);
         startActivity(intent);
     }
 
@@ -113,21 +108,17 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
                 btService.startConnectedThread();
+                btService.serverStopListen();
                 String devName = intent.getStringExtra("device");
                 bt.setText(String.format(getResources().getString(R.string.button_bluetooth_connected), devName));
+
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED) {
                 bt.setText(R.string.button_bluetooth_unconnected);
                 btService.disconnect();
-                // make device discoverable
-                int requestCode = 1;
-                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-                startActivityForResult(discoverableIntent, requestCode);
                 btService.serverStartListen(main);
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
-//                String devName = intent.getStringExtra("device");
                 bt.setText(getResources().getString(R.string.button_bluetooth_disconnected));
             }
         }
@@ -138,7 +129,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         super.onDestroy();
         unregisterReceiver(msgReceiver);
         unregisterReceiver(conReceiver);
-        if (BluetoothService.RECONNECT_AS_CLIENT) unregisterReceiver(btLostReceiver);
+        unregisterReceiver(btLostReceiver);
     }
 
 

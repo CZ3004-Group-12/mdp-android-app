@@ -50,7 +50,8 @@ public class DeviceList extends AppCompatActivity {
                 layoutManager.getOrientation());
         rv.addItemDecoration(dividerItemDecoration);
 
-        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
+        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED ||
+                BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED){
             // No devices connect, search for devices
             BluetoothService.startSearch();
             BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.SCANNING, new HashMap<>(), this);
@@ -107,10 +108,10 @@ public class DeviceList extends AppCompatActivity {
             BluetoothService.stopSearch();
             BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.UNCONNECTED, new HashMap<String, String>(),this);
             resourceId = this.getResources().getIdentifier("@string/start_scan", "string", this.getPackageName());
-
         }
         // Start Scan
-        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
+        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED ||
+                BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED){
             deviceList.clear();
             deviceListAdapter.notifyDataSetChanged();
             BluetoothService.startSearch();
