@@ -56,7 +56,18 @@
         app:layout_constraintVertical_bias="0.526"
         tools:ignore="SpeakableTextPresentCheck">
 
+        <EditText
+            android:id="@+id/btMessageTextView"
+            android:background="@android:color/transparent"
+            android:layout_marginLeft="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:focusable="false"
+            android:layout_marginStart="4dp" />
+
     </ScrollView>
+
+
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"

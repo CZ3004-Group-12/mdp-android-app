@@ -8,6 +8,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +31,7 @@ import java.util.Calendar;
 public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private BluetoothService btService;
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
+    private BtStatusChangedReceiver conReceiver;
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
@@ -36,10 +39,11 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         BluetoothService.initialize(this);
+        btService = new BluetoothService(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        ((TextView)findViewById(R.id.editTextTextMultiLine)).setMovementMethod(new ScrollingMovementMethod());
-//        ((ScrollView)findViewById(R.id.SCROLLER_ID)).fullScroll(View.FOCUS_DOWN);
+        ((TextView)findViewById(R.id.btMessageTextView)).setMovementMethod(new ScrollingMovementMethod());
+        ((ScrollView)findViewById(R.id.SCROLLER_ID)).fullScroll(View.FOCUS_DOWN);
 
         //Tab-Layout
         tabLayout = findViewById(R.id.tabLayout);
@@ -49,44 +53,70 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         adapter.AddFragment(new PathTabFragment(), "Path");
         tabViewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(tabViewPager);
+
+        // make device discoverable
+        int requestCode = 1;
+        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+        this.startActivityForResult(discoverableIntent, requestCode);
+        btService.serverStartListen(this);
+
+        // register receivers
+        registerReceiver(msgReceiver, new IntentFilter("message_received"));
+        conReceiver = new BtStatusChangedReceiver(this);
+        registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
+        btLostReceiver = btService.new BluetoothLostReceiver(this);
+        registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
     }
 
     //BlueTooth
-
     public void btConnect_onPress(View view) {
-        btService = new BluetoothService(this);
         Intent intent = new Intent(this, DeviceList.class);
         startActivity(intent);
     }
 
-//    public void sendMessage(View view) {
-//        TextView tv = findViewById(R.id.editTextTextPersonName);
-//        String message = tv.getText().toString();
-//        btService.write(message);
-//        tv.setText("");
-//    }
+    // Create a BroadcastReceiver for message_received.
+    private final BroadcastReceiver msgReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            Calendar c = Calendar.getInstance();
+            String message = "\n\n"
+                    +c.get(Calendar.HOUR_OF_DAY)+":"
+                    +c.get(Calendar.MINUTE)+":"
+                    +c.get(Calendar.SECOND)+" - "
+                    + intent.getExtras().getString("message");
 
-//    // Create a BroadcastReceiver for message_received.
-//    private final BroadcastReceiver msgReceiver = new BroadcastReceiver() {
-//        public void onReceive(Context context, Intent intent) {
-//            Calendar c = Calendar.getInstance();
-//            String message = "\n\n"
-//                    +c.get(Calendar.HOUR_OF_DAY)+":"
-//                    +c.get(Calendar.MINUTE)+":"
-//                    +c.get(Calendar.SECOND)+" - "
-//                    + intent.getExtras().getString("message");
-//
-//            ((TextView)findViewById(R.id.editTextTextMultiLine)).append(message);
-//
-//
-//        }
-//    };
+            ((TextView)findViewById(R.id.btMessageTextView)).append(message);
+
+            // TODO: REMOVE THIS ONCE DEBUGGED
+            try {
+                btService.write("Echo: " + message);
+            } catch(Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    };
 
     // Create a BroadcastReceiver for bt_status_changed.
-    private final BroadcastReceiver conReceiver = new BroadcastReceiver() {
+    public class BtStatusChangedReceiver extends BroadcastReceiver {
+        Activity main;
+
+        public BtStatusChangedReceiver(Activity main) {
+            super();
+            this.main = main;
+        }
+
+        @Override
         public void onReceive(Context context, Intent intent) {
             Button bt = findViewById(R.id.button_connect);
-            if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
+            System.out.println("on receive");
+            if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTING) {
+                btService.serverStopListen();
+                btService.clientConnect(intent.getStringExtra("address"),
+                        intent.getStringExtra("name"),
+                        main);
+                System.out.println("Fin");
+            }
+            else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
                 btService.startConnectedThread();
                 String devName = intent.getStringExtra("device");
                 bt.setText(String.format(getResources().getString(R.string.button_bluetooth_connected), devName));
@@ -94,38 +124,28 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED) {
                 bt.setText(R.string.button_bluetooth_unconnected);
                 btService.disconnect();
+                // make device discoverable
+                int requestCode = 1;
+                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+                startActivityForResult(discoverableIntent, requestCode);
+                btService.serverStartListen(main);
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
-                String devName = intent.getStringExtra("device");
+//                String devName = intent.getStringExtra("device");
                 bt.setText(getResources().getString(R.string.button_bluetooth_disconnected));
             }
         }
     };
 
-//    @Override
-//    protected void onPause() {
-//        try {
-//            unregisterReceiver(msgReceiver);
-//            unregisterReceiver(conReceiver);
-//            unregisterReceiver(btLostReceiver);
-//        } catch (Exception e) {
-//            // already unregistered
-//        }
-//        super.onPause();
-//    }
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        try {
-//            registerReceiver(msgReceiver, new IntentFilter("message_received"));
-//            registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
-//            btLostReceiver = btService.new BluetoothLostReceiver(this);
-//            registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
-//        } catch (Exception e) {
-//            // already registered
-//        }
-//    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(msgReceiver);
+        unregisterReceiver(conReceiver);
+        unregisterReceiver(btLostReceiver);
+    }
+
 
     //Tab-bar
     private class MainAdapter extends FragmentPagerAdapter {

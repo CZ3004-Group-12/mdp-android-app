@@ -1,5 +1,6 @@
 package com.example.mdpcontroller;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +10,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.ViewHolder> {
     private final List<String> localDataSet;
@@ -35,8 +38,10 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             System.out.println(address);
 
             // Spawn a new thread to avoid blocking the GUI one
-            parent.serverBtService.clientConnect(address, name, parent);
-            parent.serverBtService.serverStopListen();
+            Map<String, String> extraMap = new HashMap<>();
+            extraMap.put("address", address);
+            extraMap.put("name", name);
+            BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.CONNECTING, extraMap, parent);
             parent.finish();
         }
     }

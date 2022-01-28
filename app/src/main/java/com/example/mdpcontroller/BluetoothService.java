@@ -34,7 +34,7 @@ public class BluetoothService {
     public ConnectAsClientThread mClientThread;
     public Activity mContext;
     public  enum BluetoothStatus {
-        UNCONNECTED, SCANNING, CONNECTED, DISCONNECTED
+        UNCONNECTED, SCANNING, CONNECTING, CONNECTED, DISCONNECTED
     }
     private static BluetoothStatus btStatus;
     private static  final String[] permissions = {
@@ -261,14 +261,6 @@ public class BluetoothService {
                 Intent intent = new Intent("message_received");
                 intent.putExtra("message", "Connection Failed");
                 context.sendBroadcast(intent);
-            }
-        }
-
-        public void cancel() {
-            try {
-                mBluetoothSocket.close();
-            } catch (IOException e) {
-                System.out.println("Could not close the connect socket");
             }
         }
     }

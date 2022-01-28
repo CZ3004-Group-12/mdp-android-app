@@ -1,6 +1,5 @@
 package com.example.mdpcontroller;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,19 +15,14 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.xml.transform.Source;
 
 
 public class DeviceList extends AppCompatActivity {
     public List<String> deviceList;
     public RecyclerView rv;
-    public BluetoothService serverBtService;
     private DeviceListAdapter deviceListAdapter;
 
     @Override
@@ -36,11 +30,16 @@ public class DeviceList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_list);
         initializeDeviceList();
+        // Register for broadcasts when a device is discovered.
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(DeviceFoundReceiver, filter);
+        // Register for bt_status_changed broadcast, close device list if client connects
+        filter = new IntentFilter("bt_status_changed");
+        registerReceiver(BtStatusReceiver, filter);
     }
 
     private void initializeDeviceList(){
         // setup recyclerview
-        serverBtService = new BluetoothService(this);
         rv = findViewById(R.id.rv);
         deviceList = new ArrayList<>();
         deviceListAdapter = new DeviceListAdapter(this);
@@ -51,20 +50,10 @@ public class DeviceList extends AppCompatActivity {
                 layoutManager.getOrientation());
         rv.addItemDecoration(dividerItemDecoration);
 
-        // Register for broadcasts when a device is discovered.
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver, filter);
-
         if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED){
             // No devices connect, search for devices
             BluetoothService.startSearch();
             BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.SCANNING, new HashMap<>(), this);
-            // make device discoverable
-            int requestCode = 1;
-            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            this.startActivityForResult(discoverableIntent, requestCode);
-            serverBtService.serverStartListen(this);
         }
         else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED){
             // Device connected, display device and disconnect button
@@ -79,7 +68,7 @@ public class DeviceList extends AppCompatActivity {
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND.
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+    private final BroadcastReceiver DeviceFoundReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             String name;
@@ -96,6 +85,19 @@ public class DeviceList extends AppCompatActivity {
             }
         }
     };
+
+    // Create a BroadcastReceiver for bt_status_changed
+    private final BroadcastReceiver BtStatusReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
+                finish();
+            }
+        }
+    };
+
+    public void finish() {
+        super.finish();
+    }
 
     public void toggleScan(View view){
         System.out.println("toggleScan");
@@ -134,7 +136,8 @@ public class DeviceList extends AppCompatActivity {
         super.onDestroy();
         try {
             // Unregister listener
-            unregisterReceiver(receiver);
+            unregisterReceiver(DeviceFoundReceiver);
+            unregisterReceiver(BtStatusReceiver);
         } catch (Exception e) {
             // already unregistered
         }
