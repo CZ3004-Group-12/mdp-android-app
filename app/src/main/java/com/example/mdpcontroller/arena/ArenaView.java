@@ -36,7 +36,7 @@ public class ArenaView extends View {
     private boolean editMap, placeRobot, placeObstacles;
     //cell size, horizontal margin and verticl margin
     private float cellSize, hMargin, vMargin;
-    private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint, obstacleTextPaint;
+    private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint;
 
     //For random generator to pick unvisited neighbour
     private Random random;
@@ -66,8 +66,10 @@ public class ArenaView extends View {
         robotHeadPaint.setColor(getResources().getColor(R.color.green_700));
         obstaclePaint = new Paint();
         obstaclePaint.setColor(getResources().getColor(R.color.black));
-        obstacleTextPaint = new Paint();
-        obstacleTextPaint.setColor(getResources().getColor(R.color.white));
+        obstacleImageIDPaint = new Paint();
+        obstacleImageIDPaint.setColor(getResources().getColor(R.color.white));
+        obstacleNumPaint = new Paint();
+        obstacleNumPaint.setColor(getResources().getColor(R.color.white));
 
 
         createArena();
@@ -93,7 +95,8 @@ public class ArenaView extends View {
             cellSize = width/(COLS+1);
         else
             cellSize = height/(ROWS+1);
-        obstacleTextPaint.setTextSize(cellSize/2);
+        obstacleImageIDPaint.setTextSize(cellSize/2);
+        obstacleNumPaint.setTextSize(cellSize/4);
         hMargin = (width-COLS*cellSize)/2;
         vMargin = (height-ROWS*cellSize)/2;
         canvas.translate(hMargin,vMargin);
@@ -120,15 +123,19 @@ public class ArenaView extends View {
                 );
                 gridMap.put(cells[x][y], cellRect);
                 for(int i = 0; i < obstacles.size(); i++){
-                    String txt = null;
-                    if (!obstacles.get(i).imageID.equals("-1")) txt = String.valueOf(obstacles.get(i).imageID);
-                    plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row,obstaclePaint, txt);
+                    String txt = String.valueOf(i+1);
+                    Paint txtPaint = obstacleNumPaint;
+                    if (!obstacles.get(i).imageID.equals("-1")) {
+                        txt = String.valueOf(obstacles.get(i).imageID);
+                        txtPaint = obstacleImageIDPaint;
+                    }
+                    plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
                 }
                 for(int i = 0; i < robotCells.size(); i++){
                     if(robotCells.get(i).type == "robotHead"){
-                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotHeadPaint, null);
+                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotHeadPaint, null, null);
                     }else{
-                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotBodyPaint, null);
+                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotBodyPaint, null, null);
                     }
                 }
             }
@@ -196,7 +203,7 @@ public class ArenaView extends View {
         }
         return super.onTouchEvent(event);
     }
-    private void plotSquare(Canvas canvas, float x, float y, Paint paint, String text){
+    private void plotSquare(Canvas canvas, float x, float y, Paint paint, Paint numPaint, String text){
         RectF cellRect = new RectF(
                 (x+0.1f)*cellSize,
                 (y+0.1f)*cellSize,
@@ -213,11 +220,11 @@ public class ArenaView extends View {
             float cellWidth = ((x+1f)*cellSize - (x+0.1f)*cellSize);
             float cellHeight = ((y+1f)*cellSize - (y+0.1f)*cellSize);
             Rect bounds = new Rect();
-            obstacleTextPaint.getTextBounds(text, 0, text.length(), bounds);
+            numPaint.getTextBounds(text, 0, text.length(), bounds);
             canvas.drawText(text,
                     ((x+0.1f)*cellSize + cellWidth / 2f - bounds.width() / 2f - bounds.left),
                     ((y+0.1f)*cellSize + cellHeight / 2f + bounds.height() / 2f - bounds.bottom),
-                    obstacleTextPaint);
+                    numPaint);
         }
     }
     private void moveObstacle(Direction direction, Obstacle obstacle){
@@ -258,8 +265,8 @@ public class ArenaView extends View {
     }
 
     public void setObstacleImageID(String obstacleNumber, String imageID){
-        if (Integer.parseInt(obstacleNumber) < obstacles.size()) {
-            obstacles.get(Integer.parseInt(obstacleNumber)).setImageID(imageID);
+        if (Integer.parseInt(obstacleNumber)-1 < obstacles.size()) {
+            obstacles.get(Integer.parseInt(obstacleNumber)-1).setImageID(imageID);
             invalidate();
         }
     }
