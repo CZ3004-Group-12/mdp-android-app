@@ -32,6 +32,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private BluetoothService btService;
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
     private BtStatusChangedReceiver conReceiver;
+    private final String DELIMITER = "/";
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
@@ -75,16 +76,37 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     // Create a BroadcastReceiver for message_received.
     private final BroadcastReceiver msgReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-            Calendar c = Calendar.getInstance();
-            String message = "\n\n"
-                    +c.get(Calendar.HOUR_OF_DAY)+":"
-                    +c.get(Calendar.MINUTE)+":"
-                    +c.get(Calendar.SECOND)+" - "
-                    + intent.getExtras().getString("message");
+            String message =  intent.getExtras().getString("message");
+            //TODO: Remove once message categorization is complete
+            displayMessage(message);
 
-            ((TextView)findViewById(R.id.btMessageTextView)).append(message);
+            //Categorize received messages
+            String[] messageArr = message.split(DELIMITER);
+            switch(messageArr[0]){
+                case("ROBOT"): {
+                    break;
+                }
+                case("TARGET") : {
+                    break;
+                }
+                default: {
+                    displayMessage("Unrecognized command received: " + messageArr[0]);
+                }
+            }
         }
     };
+
+    // Displays a string in the log TextView, prepends time received as well
+    private void displayMessage(String msg) {
+        Calendar c = Calendar.getInstance();
+        msg = "\n\n"
+            +c.get(Calendar.HOUR_OF_DAY)+":"
+            +c.get(Calendar.MINUTE)+":"
+            +c.get(Calendar.SECOND)+" - "
+            +msg;
+
+        ((TextView)findViewById(R.id.btMessageTextView)).append(msg);
+    }
 
     // Create a BroadcastReceiver for bt_status_changed.
     public class BtStatusChangedReceiver extends BroadcastReceiver {
