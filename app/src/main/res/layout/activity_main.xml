@@ -23,7 +23,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <view
-        android:id="@+id/view"
+        android:id="@+id/arena"
         class="com.example.mdpcontroller.arena.ArenaView"
         android:layout_width="493dp"
         android:layout_height="569dp"
@@ -52,7 +52,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view"
+        app:layout_constraintTop_toBottomOf="@+id/arena"
         app:layout_constraintVertical_bias="0.526"
         tools:ignore="SpeakableTextPresentCheck">
 
@@ -103,53 +103,4 @@
         tools:ignore="SpeakableTextPresentCheck">
 
     </androidx.viewpager.widget.ViewPager>
-
-
-    <!--    <ScrollView-->
-<!--        android:id="@+id/SCROLLER_ID"-->
-<!--        android:layout_width="409dp"-->
-<!--        android:layout_height="169dp"-->
-<!--        android:fillViewport="true"-->
-<!--        android:scrollbars="vertical"-->
-<!--        android:background="@drawable/back"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintVertical_bias="0.613">-->
-
-<!--        <EditText-->
-<!--            android:id="@+id/editTextTextMultiLine"-->
-<!--            android:background="@android:color/transparent"-->
-<!--            android:layout_marginLeft="4dp"-->
-<!--            android:layout_width="fill_parent"-->
-<!--            android:layout_height="fill_parent"-->
-<!--            android:focusable="false"-->
-<!--            android:layout_marginStart="4dp" />-->
-<!--    </ScrollView>-->
-
-<!--    <EditText-->
-<!--        android:id="@+id/editTextTextPersonName"-->
-<!--        android:layout_width="255dp"-->
-<!--        android:layout_height="52dp"-->
-<!--        android:layout_marginStart="24dp"-->
-<!--        android:layout_marginLeft="24dp"-->
-<!--        android:layout_marginTop="196dp"-->
-<!--        android:ems="10"-->
-<!--        android:hint="Message"-->
-<!--        android:inputType="textPersonName"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
-
-<!--    <Button-->
-<!--        android:id="@+id/button3"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="4dp"-->
-<!--        android:layout_marginEnd="16dp"-->
-<!--        android:layout_marginRight="16dp"-->
-<!--        android:onClick="sendMessage"-->
-<!--        android:text="Send"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/editTextTextPersonName" />-->
 </androidx.constraintlayout.widget.ConstraintLayout>

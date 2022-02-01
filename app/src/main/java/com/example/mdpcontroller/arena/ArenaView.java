@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -35,7 +36,7 @@ public class ArenaView extends View {
     private boolean editMap, placeRobot, placeObstacles;
     //cell size, horizontal margin and verticl margin
     private float cellSize, hMargin, vMargin;
-    private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint;
+    private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint, obstacleTextPaint;
 
     //For random generator to pick unvisited neighbour
     private Random random;
@@ -65,6 +66,9 @@ public class ArenaView extends View {
         robotHeadPaint.setColor(getResources().getColor(R.color.green_700));
         obstaclePaint = new Paint();
         obstaclePaint.setColor(getResources().getColor(R.color.black));
+        obstacleTextPaint = new Paint();
+        obstacleTextPaint.setColor(getResources().getColor(R.color.white));
+
 
         createArena();
     }
@@ -89,6 +93,7 @@ public class ArenaView extends View {
             cellSize = width/(COLS+1);
         else
             cellSize = height/(ROWS+1);
+        obstacleTextPaint.setTextSize(cellSize/2);
         hMargin = (width-COLS*cellSize)/2;
         vMargin = (height-ROWS*cellSize)/2;
         canvas.translate(hMargin,vMargin);
@@ -115,15 +120,16 @@ public class ArenaView extends View {
                 );
                 gridMap.put(cells[x][y], cellRect);
                 for(int i = 0; i < obstacles.size(); i++){
-                    plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row,obstaclePaint);
+                    String txt = null;
+                    if (!obstacles.get(i).imageID.equals("-1")) txt = String.valueOf(obstacles.get(i).imageID);
+                    plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row,obstaclePaint, txt);
                 }
                 for(int i = 0; i < robotCells.size(); i++){
                     if(robotCells.get(i).type == "robotHead"){
-                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotHeadPaint);
+                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotHeadPaint, null);
                     }else{
-                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotBodyPaint);
+                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotBodyPaint, null);
                     }
-
                 }
             }
         }
@@ -190,14 +196,29 @@ public class ArenaView extends View {
         }
         return super.onTouchEvent(event);
     }
-    private void plotSquare(Canvas canvas, float x, float y, Paint paint){
-        RectF cellRect = new RectF((x+0.1f) * cellSize,(y+0.1f) *cellSize,(x+1f)* cellSize,(y+1f)* cellSize);
+    private void plotSquare(Canvas canvas, float x, float y, Paint paint, String text){
+        RectF cellRect = new RectF(
+                (x+0.1f)*cellSize,
+                (y+0.1f)*cellSize,
+                (x+1f)*cellSize,
+                (y+1f)*cellSize);
         int cellRadius = 10;
         canvas.drawRoundRect(cellRect, // rect
                 cellRadius, // rx
                 cellRadius, // ry
                 paint // Paint
         );
+        // draw number on obstacle
+        if (text != null){
+            float cellWidth = ((x+1f)*cellSize - (x+0.1f)*cellSize);
+            float cellHeight = ((y+1f)*cellSize - (y+0.1f)*cellSize);
+            Rect bounds = new Rect();
+            obstacleTextPaint.getTextBounds(text, 0, text.length(), bounds);
+            canvas.drawText(text,
+                    ((x+0.1f)*cellSize + cellWidth / 2f - bounds.width() / 2f - bounds.left),
+                    ((y+0.1f)*cellSize + cellHeight / 2f + bounds.height() / 2f - bounds.bottom),
+                    obstacleTextPaint);
+        }
     }
     private void moveObstacle(Direction direction, Obstacle obstacle){
         //resetting the grid type
@@ -236,5 +257,10 @@ public class ArenaView extends View {
         gridMap.remove(oldCell);
     }
 
-
+    public void setObstacleImageID(String obstacleNumber, String imageID){
+        if (Integer.parseInt(obstacleNumber) < obstacles.size()) {
+            obstacles.get(Integer.parseInt(obstacleNumber)).setImageID(imageID);
+            invalidate();
+        }
+    }
 }

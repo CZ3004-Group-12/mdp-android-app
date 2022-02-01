@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.example.mdpcontroller.arena.ArenaView;
 import com.example.mdpcontroller.tab.ExploreTabFragment;
 import com.example.mdpcontroller.tab.PathTabFragment;
 import com.google.android.material.tabs.TabLayout;
@@ -33,6 +34,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
     private BtStatusChangedReceiver conReceiver;
     private final String DELIMITER = "/";
+    private ArenaView arena;
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
@@ -45,6 +47,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ((TextView)findViewById(R.id.btMessageTextView)).setMovementMethod(new ScrollingMovementMethod());
         ((ScrollView)findViewById(R.id.SCROLLER_ID)).fullScroll(View.FOCUS_DOWN);
+        arena = ((ArenaView)findViewById(R.id.arena));
 
         //Tab-Layout
         tabLayout = findViewById(R.id.tabLayout);
@@ -58,7 +61,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         // Make device discoverable and accept connections
         btService.serverStartListen(this);
 
-        // register receivers
+        // register event receivers
         registerReceiver(msgReceiver, new IntentFilter("message_received"));
         conReceiver = new BtStatusChangedReceiver(this);
         registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
@@ -83,11 +86,18 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             //Categorize received messages
             String[] messageArr = message.split(DELIMITER);
             switch(messageArr[0]){
+                // Format: ROBOT/<x>/<y>/<dir>
                 case("ROBOT"): {
+                    updateRobot(messageArr[1], messageArr[2], messageArr[3]);
                     break;
                 }
-                case("TARGET") : {
+                // Format: TARGET/<num>/<id>
+                case("TARGET") :{
+                    arena.setObstacleImageID(messageArr[1], messageArr[2]);
                     break;
+                }
+                case("STATUS"): {
+                    displayMessage("Status update: " + messageArr[1]);
                 }
                 default: {
                     displayMessage("Unrecognized command received: " + messageArr[0]);
@@ -95,6 +105,11 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             }
         }
     };
+
+    // Update robot position and heading
+    private void updateRobot(String x, String y, String dir) {
+
+    }
 
     // Displays a string in the log TextView, prepends time received as well
     private void displayMessage(String msg) {
