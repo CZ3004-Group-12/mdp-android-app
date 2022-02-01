@@ -30,10 +30,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
+    private final String DELIMITER = "/";
+    private final boolean DEBUG = false;
     private BluetoothService btService;
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
     private BtStatusChangedReceiver conReceiver;
-    private final String DELIMITER = "/";
     private ArenaView arena;
 
     TabLayout tabLayout;
@@ -98,9 +99,11 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                 }
                 case("STATUS"): {
                     displayMessage("Status update: " + messageArr[1]);
+                    break;
                 }
                 default: {
-                    displayMessage("Unrecognized command received: " + messageArr[0]);
+                    // Unrecognized command, only display message if in debug mode
+                    if (DEBUG) displayMessage("DEBUG: " + messageArr[1]);
                 }
             }
         }
