@@ -97,6 +97,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                     arena.setObstacleImageID(messageArr[1], messageArr[2]);
                     break;
                 }
+                // Format: STATUS/<msg>
                 case("STATUS"): {
                     displayMessage("Status update: " + messageArr[1]);
                     break;
