@@ -11,8 +11,11 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.mdpcontroller.MainActivity;
 import com.example.mdpcontroller.R;
+import com.example.mdpcontroller.tab.AppStateViewModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,13 +36,14 @@ public class ArenaView extends View {
     private Cell player, exit;
     private static final int COLS = 12, ROWS = 13;
     private static final float WALL_THICKNESS = 4;
-    private boolean editMap, placeRobot, placeObstacles;
+    public boolean editMap, placeRobot, placeObstacles;
     //cell size, horizontal margin and verticl margin
     private float cellSize, hMargin, vMargin;
     private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint;
 
     //For random generator to pick unvisited neighbour
     private Random random;
+    private AppStateViewModel appStateViewModel;
 
 
     public ArenaView(Context context, @Nullable AttributeSet attrs) {
@@ -49,8 +53,7 @@ public class ArenaView extends View {
         robotCells = new ArrayList<Cell>();
         //change accordingly for testing
         editMap = true;
-        placeObstacles = true;
-        placeRobot = false;
+
 
         wallPaint = new Paint();
         wallPaint.setColor(getResources().getColor(R.color.transparent));

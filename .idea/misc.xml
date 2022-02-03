@@ -11,6 +11,7 @@
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/drawable/tab_indicator.xml" value="0.20555555555555555" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/activity_main.xml" value="0.5" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/fragment_explore_tab.xml" value="0.67" />
+        <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/fragment_graph_view.xml" value="0.2484375" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/fragment_path_tab.xml" value="0.55" />
       </map>
     </option>
@@ -59,7 +60,7 @@
       </value>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

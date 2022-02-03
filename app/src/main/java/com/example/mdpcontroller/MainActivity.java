@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 
 import android.app.Activity;
@@ -22,6 +23,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.mdpcontroller.arena.ArenaView;
+import com.example.mdpcontroller.arena.GraphView;
+import com.example.mdpcontroller.arena.GraphViewFragment;
+import com.example.mdpcontroller.tab.AppStateViewModel;
 import com.example.mdpcontroller.tab.ExploreTabFragment;
 import com.example.mdpcontroller.tab.PathTabFragment;
 import com.google.android.material.tabs.TabLayout;
@@ -36,10 +40,13 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
     private BtStatusChangedReceiver conReceiver;
     private ArenaView arena;
+    private AppStateViewModel appStateViewModel;
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
     MainAdapter adapter;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         BluetoothService.initialize(this);
@@ -48,7 +55,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ((TextView)findViewById(R.id.btMessageTextView)).setMovementMethod(new ScrollingMovementMethod());
         ((ScrollView)findViewById(R.id.SCROLLER_ID)).fullScroll(View.FOCUS_DOWN);
-        arena = ((ArenaView)findViewById(R.id.arena));
 
         //Tab-Layout
         tabLayout = findViewById(R.id.tabLayout);
@@ -58,6 +64,19 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         adapter.AddFragment(new PathTabFragment(), "Path");
         tabViewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(tabViewPager);
+
+        appStateViewModel = new ViewModelProvider(this).get(AppStateViewModel.class);
+
+        appStateViewModel.getRobot().observe(this, item -> {
+            // Perform an action with the latest item data
+            arena.placeRobot = item;
+            System.out.println(arena.placeRobot);
+        });
+        appStateViewModel.getObstacles().observe(this, item -> {
+            // Perform an action with the latest item data
+            arena.placeObstacles = item;
+            System.out.println(arena.placeObstacles);
+        });
 
         // Make device discoverable and accept connections
         btService.serverStartListen(this);
