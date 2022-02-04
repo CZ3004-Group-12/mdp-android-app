@@ -35,7 +35,7 @@ public class ArenaView extends View {
     private Cell player, exit;
     private static final int COLS = 12, ROWS = 13;
     private static final float WALL_THICKNESS = 4;
-    private boolean editMap, placeRobot, placeObstacles;
+    public boolean editMap, isSetRobot, isSetObstacles;
     //cell size, horizontal margin and verticl margin
     private float cellSize, hMargin, vMargin;
     private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint;
@@ -52,8 +52,6 @@ public class ArenaView extends View {
         robotCells = new ArrayList<Cell>();
         //change accordingly for testing
         editMap = true;
-        placeObstacles = true;
-        placeRobot = false;
 
         wallPaint = new Paint();
         wallPaint.setColor(getResources().getColor(R.color.transparent));
@@ -159,7 +157,7 @@ public class ArenaView extends View {
                     System.out.println(x + " : " + y + " : " + rectX + " : " + rectY + " : " + hMargin + " : " + vMargin + " : " + cellSize);
                     System.out.println("Coordinates: (" + entry.getKey().row + "," + entry.getKey().col + ")");
                     if(editMap){
-                        if(placeObstacles){
+                        if(isSetObstacles){
                             if(entry.getKey().type == ""){
 //                                if (event.getAction() == MotionEvent.ACTION_MOVE)
 //                                    return false;
@@ -169,7 +167,7 @@ public class ArenaView extends View {
                                 System.out.println(gridMap.get(tempKey));
                                 obstacles.add(new Obstacle(entry.getKey(), false));
                                 System.out.println("Obstacles Coordinates: (" + entry.getKey().row + "," + entry.getKey().col + ")");
-                                btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", gridMap.size(), entry.getKey().row, entry.getKey().col));
+                                //btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", gridMap.size(), entry.getKey().row, entry.getKey().col));
                                 gridMap.remove(entry.getKey());
                                 invalidate();
                                 break;
@@ -179,7 +177,7 @@ public class ArenaView extends View {
                             }else{
                                 System.out.println("Grid is occupied");
                             }
-                        }else if(placeRobot){
+                        }else if(isSetRobot){
                             if(entry.getKey().row-1 == -1 || entry.getKey().row+1 == ROWS || entry.getKey().col+1 == COLS || entry.getKey().col-1 == -1){
                                 System.out.println("Out of bound : Robot need six cells");
                             }else{

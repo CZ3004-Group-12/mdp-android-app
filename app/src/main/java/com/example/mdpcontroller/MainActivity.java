@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 
 import android.app.Activity;
@@ -22,6 +23,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.mdpcontroller.arena.ArenaView;
+import com.example.mdpcontroller.tab.AppDataModel;
 import com.example.mdpcontroller.tab.ExploreTabFragment;
 import com.example.mdpcontroller.tab.PathTabFragment;
 import com.google.android.material.tabs.TabLayout;
@@ -35,12 +37,15 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private BluetoothService btService;
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
     private BtStatusChangedReceiver conReceiver;
+
+    private AppDataModel appDataModel;
     private ArenaView arena;
     private PathTabFragment pathFrag;
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
     MainAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         BluetoothService.initialize(this);
@@ -71,6 +76,17 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
         btLostReceiver = btService.new BluetoothLostReceiver(this);
         registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
+
+        //Getting data from fragment and assigning to view variable.
+        appDataModel = new ViewModelProvider(this).get(AppDataModel.class);
+
+        appDataModel.getIsSetRobot().observe(this, data -> {
+            // Perform an action with the latest item data
+            arena.isSetRobot = data;
+        });
+        appDataModel.getIsSetObstacles().observe(this, data -> {
+            arena.isSetObstacles = data;
+        });
         registerReceiver(sendMsgReceiver, new IntentFilter("send_msg"));
     }
 
@@ -189,7 +205,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         unregisterReceiver(btLostReceiver);
         unregisterReceiver(sendMsgReceiver);
     }
-
 
 
     //Tab-bar

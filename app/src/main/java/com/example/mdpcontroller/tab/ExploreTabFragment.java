@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,31 +20,65 @@ public class ExploreTabFragment extends Fragment {
     private Button setRobotBtn;
     private Button setObstaclesBtn;
 
+    private boolean isSetRobot;
+    private boolean isSetObstacles;
+    private boolean isRobotMove;
+    private boolean isRobotStop;
+    private boolean isReset;
+    private AppDataModel appDataModel;
 
-    private Boolean setRobot = false;
-    private Boolean setObstacles = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        isSetRobot = false;
+        isSetObstacles = false;
+        isRobotMove = false;
+        isRobotStop = false;
+        isReset = false;
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_explore_tab, container, false);
         setRobotBtn = view.findViewById(R.id.setRobot);
         setObstaclesBtn = view.findViewById(R.id.setObstacles);
+        appDataModel = new ViewModelProvider(requireActivity()).get(AppDataModel.class);
 
-        setRobotBtn.setOnClickListener(view -> {
-            if(setRobot == false){
-                setRobot = true;
-                setRobotBtn.setText("Done");
+        setRobotBtn.setOnClickListener(item ->{
+            if(isSetObstacles == true){
+                isSetObstacles = false;
+                setObstaclesBtn.setText("Set Obstacles");
+                isSetRobot = btnAction(isSetRobot, setRobotBtn, "robot");
             }else{
-                setRobot = false;
-                setRobotBtn.setText("Set robot");
+                isSetRobot = btnAction(isSetRobot, setRobotBtn, "robot");
             }
-            Intent i = new Intent(getActivity(), MainActivity.class);
-            i.putExtra("SET_ROBOT",setRobot);
-            startActivity(i);
+            appDataModel.setIsSetObstacles(isSetObstacles);
+            appDataModel.setIsSetRobot(isSetRobot);
+        });
+        setObstaclesBtn.setOnClickListener(item ->{
+            if(isSetRobot == true){
+                isSetRobot = false;
+                setRobotBtn.setText("Set Robot");
+                isSetObstacles = btnAction(isSetObstacles, setObstaclesBtn, "obstacles");
+            }else{
+                isSetObstacles = btnAction(isSetObstacles, setObstaclesBtn, "obstacles");
+            }
+
+            appDataModel.setIsSetObstacles(isSetObstacles);
+            appDataModel.setIsSetRobot(isSetRobot);
         });
 
         return view;
+    }
+
+    private boolean btnAction(boolean btnVal, Button btn, String btnText){
+        System.out.println(btnVal + btnText);
+        if(btnVal == true){
+            btnVal = false;
+            btn.setText("Set " + btnText);
+        }
+        else{
+            btnVal = true;
+            btn.setText("Done");
+        }
+        return btnVal;
     }
 }
