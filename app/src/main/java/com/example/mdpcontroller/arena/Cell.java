@@ -19,4 +19,12 @@ public class Cell {
         this.type = type;
     }
 
+    @Override
+    public boolean equals(Object o){
+        if (o instanceof Cell){
+            Cell that = (Cell) o;
+            return (this.col==that.col) && (this.row== that.row);
+        }
+        return false;
+    }
 }

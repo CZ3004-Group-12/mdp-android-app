@@ -26,7 +26,6 @@ public class ArenaView extends View {
     //Arena
     private Cell[][] cells;
     private Map<Cell, RectF> gridMap;
-    Robot robot = new Robot();
     private ArrayList<Obstacle> obstacles;
     private ArrayList<Cell> robotCells;
     private enum Direction{ //data type of self defined constant
@@ -50,6 +49,7 @@ public class ArenaView extends View {
         gridMap = new HashMap<Cell, RectF>();
         obstacles = new ArrayList<Obstacle>();
         robotCells = new ArrayList<Cell>();
+        Robot.initializeRobot();
         //change accordingly for testing
         editMap = true;
 
@@ -103,6 +103,8 @@ public class ArenaView extends View {
         canvas.translate(hMargin,vMargin);
         for (int x = 0; x < COLS; x++){
             for (int y = 0; y < ROWS; y++){
+
+                // Paint walls
                 if(cells[x][y].topWall){
                     canvas.drawLine( x* cellSize, y *cellSize, (x+1)* cellSize,y*cellSize, wallPaint);
                 }
@@ -115,6 +117,8 @@ public class ArenaView extends View {
                 if(cells[x][y].rightWall){
                     canvas.drawLine( (x+1)* cellSize, y *cellSize, (x+1)* cellSize,(y+1)*cellSize, wallPaint);
                 }
+
+                // Paint normal cell
                 RectF cellRect = new RectF((x+0.1f) * cellSize,(y+0.1f) *cellSize,(x+1f)* cellSize,(y+1f)* cellSize);
                 int cellRadius = 10;
                 canvas.drawRoundRect(cellRect, // rect
@@ -123,22 +127,34 @@ public class ArenaView extends View {
                         gridPaint // Paint
                 );
                 gridMap.put(cells[x][y], cellRect);
-                for(int i = 0; i < obstacles.size(); i++){
-                    String txt = String.valueOf(i+1);
-                    Paint txtPaint = obstacleNumPaint;
-                    if (!obstacles.get(i).imageID.equals("-1")) {
-                        txt = String.valueOf(obstacles.get(i).imageID);
-                        txtPaint = obstacleImageIDPaint;
-                    }
-                    plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
-                }
-                for(int i = 0; i < robotCells.size(); i++){
-                    if(robotCells.get(i).type == "robotHead"){
-                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotHeadPaint, null, null);
-                    }else{
-                        plotSquare(canvas,(float) robotCells.get(i).col,(float) robotCells.get(i).row,robotBodyPaint, null, null);
-                    }
-                }
+
+            }
+        }
+
+        // Paint Obstacles
+        for(int i = 0; i < obstacles.size(); i++){
+            // Default: Paint obstacle with no Image ID
+            String txt = String.valueOf(i+1);
+            Paint txtPaint = obstacleNumPaint;
+            // Paint obstacle with Image ID
+            if (!obstacles.get(i).imageID.equals("-1")) {
+                txt = String.valueOf(obstacles.get(i).imageID);
+                txtPaint = obstacleImageIDPaint;
+            }
+            plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
+        }
+
+        if (Robot.robotMatrix[0][0] == null) return; // Skip below if Robot not initialized
+
+        // Paint Robot
+        Cell robotCell;
+        Paint robotPaint;
+        for (int i=0; i<Robot.robotMatrix[0].length; i++){ // iterate through rows: i = x coordinate
+            for (int j=0; j<Robot.robotMatrix.length; j++){ // iterate through cols: j = y coordinate
+                robotCell = Robot.robotMatrix[i][j];
+                if(robotCell.type.equals("robotHead")) robotPaint = robotHeadPaint;
+                else robotPaint = robotBodyPaint;
+                plotSquare(canvas,(float) robotCell.col,(float) robotCell.row,robotPaint, null, null);
             }
         }
 
@@ -182,10 +198,7 @@ public class ArenaView extends View {
                                 System.out.println("Out of bound : Robot need six cells");
                             }else{
                                 if(entry.getKey() != null){
-                                    robotCells = robot.getRobotCells(entry.getKey());
-                                    for(int i = 0; i < robotCells.size();i++){
-                                        setRobot(robotCells.get(i),robotCells.get(i).type,gridMap.get(new Cell(robotCells.get(i).col,robotCells.get(i).row)));
-                                    }
+                                    Robot.setRobot(entry.getKey(), "N", cells); // hardcoded dir for initial set
                                     invalidate();
                                     break;
                                 }
