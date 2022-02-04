@@ -36,6 +36,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
     private BtStatusChangedReceiver conReceiver;
     private ArenaView arena;
+    private PathTabFragment pathFrag;
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
@@ -70,6 +71,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         registerReceiver(conReceiver, new IntentFilter("bt_status_changed"));
         btLostReceiver = btService.new BluetoothLostReceiver(this);
         registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
+        registerReceiver(sendMsgReceiver, new IntentFilter("send_msg"));
     }
 
     //BlueTooth
@@ -109,6 +111,14 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                     if (DEBUG) displayMessage("DEBUG: " + messageArr[1]);
                 }
             }
+        }
+    };
+
+    // Create a BroadcastReceiver for send_msg.
+    public BroadcastReceiver sendMsgReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent){
+            String message = intent.getExtras().getString("message");
+            btService.write(message);
         }
     };
 
@@ -177,7 +187,9 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         unregisterReceiver(msgReceiver);
         unregisterReceiver(conReceiver);
         unregisterReceiver(btLostReceiver);
+        unregisterReceiver(sendMsgReceiver);
     }
+
 
 
     //Tab-bar
