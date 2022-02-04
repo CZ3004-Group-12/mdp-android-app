@@ -33,7 +33,7 @@ public class ArenaView extends View {
         UP, DOWN, LEFT, RIGHT
     }
     private Cell player, exit;
-    private static final int COLS = 12, ROWS = 13;
+    private static final int COLS = 20, ROWS = 20;
     private static final float WALL_THICKNESS = 4;
     public boolean editMap, isSetRobot, isSetObstacles;
     //cell size, horizontal margin and verticl margin
