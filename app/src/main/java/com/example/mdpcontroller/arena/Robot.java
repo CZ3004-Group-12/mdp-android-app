@@ -15,25 +15,28 @@ import java.util.Map;
  */
 public class Robot {
     public static Cell[][] robotMatrix;
+    private static Cell[][] allCells;
     //  Looks like this:
     //  [B, H, B]
     //  [B, B, B]
     //  [B, B, B]
 
-    public static void initializeRobot(){
+    public static void initializeRobot(Cell[][] cells){
         robotMatrix = new Cell[3][3];
+        allCells = cells;
     }
-    public static void setRobot(Cell centre,  String dir, Cell[][] cells){
-        setRobotPosition(centre, cells);
+    public static void setRobot(int xCenter, int yCenter,  String dir){
+        setRobotPosition(xCenter, yCenter);
         setRobotDirection(dir);
     }
     /**
      * Does NOT validate if position is valid, Robot should not know about the state of the grid
      * Perform validation before calling this method
-     * @param centre new centre of the robot
+     * @param xCenter x Coordinate of new centre of robot
+     * @param yCenter y Coordinate of new centre of robot
      */
-    private static void setRobotPosition(Cell centre, Cell[][] cells){
-        int yTopLeft=centre.row-1, xTopLeft= centre.col-1;
+    private static void setRobotPosition(int xCenter, int yCenter){
+        int yTopLeft=yCenter-1, xTopLeft= xCenter-1;
         Cell curCell;
         // wipe old robot position
         if (robotMatrix[0][0] != null){ // skip on initial robot set
@@ -47,7 +50,7 @@ public class Robot {
         // set new robot position
         for (int i=0; i<robotMatrix[0].length; i++){ // iterate through rows: i = x coordinate
             for (int j=0; j<robotMatrix.length; j++){ // iterate through cols: j = y coordinate
-                curCell = cells[xTopLeft+i][yTopLeft+j];
+                curCell = allCells[xTopLeft+i][yTopLeft+j];
                 curCell.type = "robot";
                 robotMatrix[i][j] = curCell;
             }

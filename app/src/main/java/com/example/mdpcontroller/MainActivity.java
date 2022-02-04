@@ -23,6 +23,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.mdpcontroller.arena.ArenaView;
+import com.example.mdpcontroller.arena.Robot;
 import com.example.mdpcontroller.tab.AppDataModel;
 import com.example.mdpcontroller.tab.ExploreTabFragment;
 import com.example.mdpcontroller.tab.PathTabFragment;
@@ -101,15 +102,12 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private final BroadcastReceiver msgReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String message =  intent.getExtras().getString("message");
-            //TODO: Remove once message categorization is complete
-            //displayMessage(message);
-
             //Categorize received messages
             String[] messageArr = message.split(DELIMITER);
             switch(messageArr[0]){
                 // Format: ROBOT/<x>/<y>/<dir>
                 case("ROBOT"): {
-                    updateRobot(messageArr[1], messageArr[2], messageArr[3]);
+                    arena.setRobot(Integer.parseInt(messageArr[1]), Integer.parseInt(messageArr[2]), messageArr[3]);
                     break;
                 }
                 // Format: TARGET/<num>/<id>

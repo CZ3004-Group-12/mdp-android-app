@@ -49,7 +49,9 @@ public class ArenaView extends View {
         gridMap = new HashMap<Cell, RectF>();
         obstacles = new ArrayList<Obstacle>();
         robotCells = new ArrayList<Cell>();
-        Robot.initializeRobot();
+        cells = new Cell[COLS][ROWS];
+        createArena();
+        Robot.initializeRobot(cells);
         //change accordingly for testing
         editMap = true;
 
@@ -71,13 +73,9 @@ public class ArenaView extends View {
         obstacleImageIDPaint.setColor(getResources().getColor(R.color.white));
         obstacleNumPaint = new Paint();
         obstacleNumPaint.setColor(getResources().getColor(R.color.white));
-
-
-        createArena();
     }
 
     private void createArena(){
-        cells = new Cell[COLS][ROWS];
         for (int x = 0; x < COLS; x++){
             for (int y = 0; y < ROWS; y++){
                 cells[x][y] = new Cell(x,y);
@@ -163,51 +161,44 @@ public class ArenaView extends View {
     public boolean onTouchEvent(MotionEvent event){
         float x = event.getX();
         float y = event.getY();
+        Cell curCell;
+        RectF curRect;
         for (Map.Entry<Cell, RectF> entry : gridMap.entrySet()) {
-            if(entry.getValue() == null)
-                break;
-            else {
-                float rectX = entry.getValue().centerX();
-                float rectY = entry.getValue().centerY();
-                if (entry.getValue().contains(x -  (0.25f*cellSize), y -cellSize)) {
+            curCell = entry.getKey();
+            curRect = entry.getValue();
+            if(curRect != null && curCell != null) {
+                float rectX = curRect.centerX();
+                float rectY = curRect.centerY();
+                if (curRect.contains(x -  (0.25f*cellSize), y -cellSize)) {
                     System.out.println(x + " : " + y + " : " + rectX + " : " + rectY + " : " + hMargin + " : " + vMargin + " : " + cellSize);
-                    System.out.println("Coordinates: (" + entry.getKey().row + "," + entry.getKey().col + ")");
+                    System.out.println("Coordinates: (" + curCell.row + "," + curCell.col + ")");
                     if(editMap){
                         if(isSetObstacles){
-                            if(entry.getKey().type == ""){
+                            if(curCell.type == ""){
 //                                if (event.getAction() == MotionEvent.ACTION_MOVE)
 //                                    return false;
-                                Cell tempKey = new Cell(entry.getKey().col, entry.getKey().row, "obstacle");
-                                gridMap.put(tempKey,entry.getValue());
-                                System.out.println(gridMap.get(entry.getKey()));
+                                Cell tempKey = new Cell(curCell.col, curCell.row, "obstacle");
+                                gridMap.put(tempKey,curRect);
+                                System.out.println(gridMap.get(curCell));
                                 System.out.println(gridMap.get(tempKey));
-                                obstacles.add(new Obstacle(entry.getKey(), false));
-                                System.out.println("Obstacles Coordinates: (" + entry.getKey().row + "," + entry.getKey().col + ")");
-                                //btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", gridMap.size(), entry.getKey().row, entry.getKey().col));
-                                gridMap.remove(entry.getKey());
+                                obstacles.add(new Obstacle(curCell, false));
+                                System.out.println("Obstacles Coordinates: (" + curCell.row + "," + curCell.col + ")");
+                                //btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", gridMap.size(), curCell.row, curCell.col));
+                                gridMap.remove(curCell);
                                 invalidate();
                                 break;
                             }
-                            else if (entry.getKey().type == "obstacle"){
+                            else if (curCell.type == "obstacle"){
                                 // for dragging still doing
                             }else{
                                 System.out.println("Grid is occupied");
                             }
                         }else if(isSetRobot){
-                            if(entry.getKey().row-1 == -1 || entry.getKey().row+1 == ROWS || entry.getKey().col+1 == COLS || entry.getKey().col-1 == -1){
-                                System.out.println("Out of bound : Robot need six cells");
-                            }else{
-                                if(entry.getKey() != null){
-                                    Robot.setRobot(entry.getKey(), "N", cells); // hardcoded dir for initial set
-                                    invalidate();
-                                    break;
-                                }
-                            }
-
+                            setRobot(curCell.col, curCell.row, "N");
                         }
                     }else{
-                        if(entry.getKey().type == "obstacle"){
-                            System.out.println("POP-UP" + entry.getKey().type);
+                        if(curCell.type.equals("obstacle")){
+                            System.out.println("POP-UP" + curCell.type);
                             break;
                         }
                     }
@@ -218,6 +209,7 @@ public class ArenaView extends View {
         }
         return super.onTouchEvent(event);
     }
+
     private void plotSquare(Canvas canvas, float x, float y, Paint paint, Paint numPaint, String text){
         RectF cellRect = new RectF(
                 (x+0.1f)*cellSize,
@@ -242,6 +234,7 @@ public class ArenaView extends View {
                     numPaint);
         }
     }
+
     private void moveObstacle(Direction direction, Obstacle obstacle){
         //resetting the grid type
         Cell tempKey = new Cell(obstacle.cell.col, obstacle.cell.row, "");
@@ -268,20 +261,18 @@ public class ArenaView extends View {
         }
     }
 
-    private void setRobot(Cell oldCell, String type, RectF rect){
-        Cell tempKey;
-        if(type == "robotHead"){
-            tempKey = new Cell(oldCell.col, oldCell.row, "robotHead");
-        }else{
-            tempKey = new Cell(oldCell.col, oldCell.row, "robot");
-        }
-        gridMap.put(tempKey,rect);
-        gridMap.remove(oldCell);
-    }
-
     public void setObstacleImageID(String obstacleNumber, String imageID){
         if (Integer.parseInt(obstacleNumber)-1 < obstacles.size()) {
             obstacles.get(Integer.parseInt(obstacleNumber)-1).setImageID(imageID);
+            invalidate();
+        }
+    }
+
+    public void setRobot(int xCenter, int yCenter,  String dir){
+        if(yCenter<1 || yCenter>=ROWS-1 || xCenter>=COLS-1 || xCenter<1){
+            System.out.println("Out of bound : Robot need six cells");
+        }else{
+            Robot.setRobot(xCenter, yCenter, dir);
             invalidate();
         }
     }
