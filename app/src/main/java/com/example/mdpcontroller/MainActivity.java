@@ -48,7 +48,9 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ((TextView)findViewById(R.id.btMessageTextView)).setMovementMethod(new ScrollingMovementMethod());
         ((ScrollView)findViewById(R.id.SCROLLER_ID)).fullScroll(View.FOCUS_DOWN);
-        arena = ((ArenaView)findViewById(R.id.arena));
+        arena = findViewById(R.id.arena);
+        // Pass btService to arena
+        arena.setBtService(btService);
 
         //Tab-Layout
         tabLayout = findViewById(R.id.tabLayout);
@@ -82,7 +84,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String message =  intent.getExtras().getString("message");
             //TODO: Remove once message categorization is complete
-            displayMessage(message);
+            //displayMessage(message);
 
             //Categorize received messages
             String[] messageArr = message.split(DELIMITER);

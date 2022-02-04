@@ -12,10 +12,12 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.example.mdpcontroller.BluetoothService;
 import com.example.mdpcontroller.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Stack;
@@ -40,6 +42,7 @@ public class ArenaView extends View {
 
     //For random generator to pick unvisited neighbour
     private Random random;
+    private BluetoothService btService;
 
 
     public ArenaView(Context context, @Nullable AttributeSet attrs) {
@@ -166,6 +169,7 @@ public class ArenaView extends View {
                                 System.out.println(gridMap.get(tempKey));
                                 obstacles.add(new Obstacle(entry.getKey(), false));
                                 System.out.println("Obstacles Coordinates: (" + entry.getKey().row + "," + entry.getKey().col + ")");
+                                btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", gridMap.size(), entry.getKey().row, entry.getKey().col));
                                 gridMap.remove(entry.getKey());
                                 invalidate();
                                 break;
@@ -269,5 +273,9 @@ public class ArenaView extends View {
             obstacles.get(Integer.parseInt(obstacleNumber)-1).setImageID(imageID);
             invalidate();
         }
+    }
+
+    public void setBtService(BluetoothService btService){
+        this.btService = btService;
     }
 }
