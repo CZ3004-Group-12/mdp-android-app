@@ -222,57 +222,135 @@ public class ArenaView extends View {
     }
     @Override
     public boolean onTouchEvent(MotionEvent event){
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+        float x = event.getX();
+        float y = event.getY();
+        Cell curCell;
+        RectF curRect;
+        for (Map.Entry<Cell, RectF> entry : gridMap.entrySet()) {
+            curCell = entry.getKey();
+            curRect = entry.getValue();
+            if(curRect != null && curCell != null) {
+                float rectX = curRect.centerX();
+                float rectY = curRect.centerY();
+                float translateRectX;
+                float translateRectY;
 
-            case MotionEvent.ACTION_DOWN:
-                mode = DRAG;
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
 
-                //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
-                //amount for each coordinates This works even when we are translating the first time because the initial
-                //values for these two variables is zero.
-                startX = event.getX() - previousTranslateX;
-                startY = event.getY() - previousTranslateY;
-                break;
+                        case MotionEvent.ACTION_DOWN:
+                            mode = DRAG;
+                            System.out.println("DOWN");
+                            //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
+                            //amount for each coordinates This works even when we are translating the first time because the initial
+                            //values for these two variables is zero.
+                            startX = event.getX() - previousTranslateX;
+                            startY = event.getY() - previousTranslateY;
+                            break;
 
-            case MotionEvent.ACTION_MOVE:
-                translateX = event.getX() - startX;
-                translateY = event.getY() - startY;
+                        case MotionEvent.ACTION_MOVE:
+                            translateX = event.getX() - startX;
+                            translateY = event.getY() - startY;
+//                            translateRectX = rectX - startX;
+//                            translateRectY = rectY - startY;
+                            System.out.println("move");
+                            //We cannot use startX and startY directly because we have adjusted their values using the previous translation values.
+                            //This is why we need to add those values to startX and startY so that we can get the actual coordinates of the finger.
+                            double distance = Math.sqrt(Math.pow(event.getX() - (startX + previousTranslateX), 2) +
+                                    Math.pow(event.getY() - (startY + previousTranslateY), 2)
+                            );
+                            System.out.println("Rectangle Coordinates: (" + curRect.centerX() + "," + curRect.centerY() + ")");
+                            System.out.println("Translate Coordinates: (" + translateX + "," + translateY + ")");
 
-                //We cannot use startX and startY directly because we have adjusted their values using the previous translation values.
-                //This is why we need to add those values to startX and startY so that we can get the actual coordinates of the finger.
-                double distance = Math.sqrt(Math.pow(event.getX() - (startX + previousTranslateX), 2) +
-                        Math.pow(event.getY() - (startY + previousTranslateY), 2)
-                );
+                            if(distance > 0) {
+                                dragged = true;
+                            }
+//                            if (curRect.contains(translateX -  (0.25f*cellSize), translateY -cellSize)) {
+//                                System.out.println("Coordinates: (" + curCell.row + "," + curCell.col + ")");
+//                            }
 
-                if(distance > 0) {
-                    dragged = true;
-                }
+                            break;
 
-                break;
+                        case MotionEvent.ACTION_POINTER_DOWN:
+                            mode = ZOOM;
+                            System.out.println("POINTER DOWN");
+                            break;
 
-            case MotionEvent.ACTION_POINTER_DOWN:
-                mode = ZOOM;
-                break;
+                        case MotionEvent.ACTION_UP:
+                            mode = NONE;
+                            dragged = false;
+                            System.out.println("UP");
+                            //All fingers went up, so let&#039;s save the value of translateX and translateY into previousTranslateX and
+                            //previousTranslate
+                            previousTranslateX = translateX;
+                            previousTranslateY = translateY;
+//                            System.out.println("Rectangle Coordinates: (" + curRect.centerX() + "," + curRect.centerY() + ")");
+//                            System.out.println("Translate Coordinates: (" + translateX + "," + translateY + ")");
+                            break;
 
-            case MotionEvent.ACTION_UP:
-                mode = NONE;
-                dragged = false;
+                        case MotionEvent.ACTION_POINTER_UP:
+                            mode = DRAG;
 
-                //All fingers went up, so let&#039;s save the value of translateX and translateY into previousTranslateX and
-                //previousTranslate
-                previousTranslateX = translateX;
-                previousTranslateY = translateY;
-                break;
+                            //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
+                            //and previousTranslateY when the second finger goes up
+                            previousTranslateX = translateX;
+                            previousTranslateY = translateY;
+                            break;
+                    }
+            }
 
-            case MotionEvent.ACTION_POINTER_UP:
-                mode = DRAG;
 
-                //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
-                //and previousTranslateY when the second finger goes up
-                previousTranslateX = translateX;
-                previousTranslateY = translateY;
-                break;
         }
+//        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+//
+//            case MotionEvent.ACTION_DOWN:
+//                mode = DRAG;
+//
+//                //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
+//                //amount for each coordinates This works even when we are translating the first time because the initial
+//                //values for these two variables is zero.
+//                startX = event.getX() - previousTranslateX;
+//                startY = event.getY() - previousTranslateY;
+//                break;
+//
+//            case MotionEvent.ACTION_MOVE:
+//                translateX = event.getX() - startX;
+//                translateY = event.getY() - startY;
+//
+//                //We cannot use startX and startY directly because we have adjusted their values using the previous translation values.
+//                //This is why we need to add those values to startX and startY so that we can get the actual coordinates of the finger.
+//                double distance = Math.sqrt(Math.pow(event.getX() - (startX + previousTranslateX), 2) +
+//                        Math.pow(event.getY() - (startY + previousTranslateY), 2)
+//                );
+//
+//                if(distance > 0) {
+//                    dragged = true;
+//                }
+//
+//                break;
+//
+//            case MotionEvent.ACTION_POINTER_DOWN:
+//                mode = ZOOM;
+//                break;
+//
+//            case MotionEvent.ACTION_UP:
+//                mode = NONE;
+//                dragged = false;
+//
+//                //All fingers went up, so let&#039;s save the value of translateX and translateY into previousTranslateX and
+//                //previousTranslate
+//                previousTranslateX = translateX;
+//                previousTranslateY = translateY;
+//                break;
+//
+//            case MotionEvent.ACTION_POINTER_UP:
+//                mode = DRAG;
+//
+//                //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
+//                //and previousTranslateY when the second finger goes up
+//                previousTranslateX = translateX;
+//                previousTranslateY = translateY;
+//                break;
+//        }
 
         detector.onTouchEvent(event);
 
@@ -286,11 +364,7 @@ public class ArenaView extends View {
             invalidate();
         }
 
-//        return true;
-        float x = event.getX();
-        float y = event.getY();
-        Cell curCell;
-        RectF curRect;
+
 //        for (Map.Entry<Cell, RectF> entry : gridMap.entrySet()) {
 //            curCell = entry.getKey();
 //            curRect = entry.getValue();
