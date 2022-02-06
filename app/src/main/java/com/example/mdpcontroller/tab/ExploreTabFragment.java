@@ -10,7 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.example.mdpcontroller.BluetoothService;
 import com.example.mdpcontroller.MainActivity;
 import com.example.mdpcontroller.R;
 
@@ -43,7 +45,7 @@ public class ExploreTabFragment extends Fragment {
         appDataModel = new ViewModelProvider(requireActivity()).get(AppDataModel.class);
 
         setRobotBtn.setOnClickListener(item ->{
-            if(isSetObstacles == true){
+            if(isSetObstacles){
                 isSetObstacles = false;
                 setObstaclesBtn.setText("Set Obstacles");
                 isSetRobot = btnAction(isSetRobot, setRobotBtn, "robot");
@@ -54,7 +56,7 @@ public class ExploreTabFragment extends Fragment {
             appDataModel.setIsSetRobot(isSetRobot);
         });
         setObstaclesBtn.setOnClickListener(item ->{
-            if(isSetRobot == true){
+            if(isSetRobot){
                 isSetRobot = false;
                 setRobotBtn.setText("Set Robot");
                 isSetObstacles = btnAction(isSetObstacles, setObstaclesBtn, "obstacles");
@@ -70,8 +72,12 @@ public class ExploreTabFragment extends Fragment {
     }
 
     private boolean btnAction(boolean btnVal, Button btn, String btnText){
-        System.out.println(btnVal + btnText);
-        if(btnVal == true){
+        // ensure that obstacles and robot are only set when bluetooth is connected
+        if (BluetoothService.getBtStatus() != BluetoothService.BluetoothStatus.CONNECTED){
+            Toast.makeText(getContext(), "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(btnVal){
             btnVal = false;
             btn.setText("Set " + btnText);
         }
