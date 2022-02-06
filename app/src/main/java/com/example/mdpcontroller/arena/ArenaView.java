@@ -62,20 +62,12 @@ public class ArenaView extends View {
     private Cell[][] cells;
     private Map<Cell, RectF> gridMap;
     private ArrayList<Obstacle> obstacles;
-    private ArrayList<Cell> robotCells;
-    private enum Direction{ //data type of self defined constant
-        UP, DOWN, LEFT, RIGHT
-    }
-    private Cell player, exit;
+    private Obstacle movingObs;
     public static final int COLS = 20, ROWS = 20;
-    private static final float WALL_THICKNESS = 4;
-    public boolean editMap, isSetRobot, isSetObstacles;
-    //cell size, horizontal margin and verticl margin
+    public boolean editMap, isSetRobot, isSetObstacles,obstacleSelected;
     private float cellSize, hMargin, vMargin;
-    private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint;
+    private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint,obstacleHeadPaint,exploredObstaclePaint;
 
-    //For random generator to pick unvisited neighbour
-    private Random random;
     private BluetoothService btService;
 
 
@@ -83,7 +75,6 @@ public class ArenaView extends View {
         super(context, attrs);
         gridMap = new HashMap<Cell, RectF>();
         obstacles = new ArrayList<Obstacle>();
-        robotCells = new ArrayList<Cell>();
         cells = new Cell[COLS][ROWS];
         clipBoundsCanvas = new Rect();
         createArena();
@@ -110,6 +101,10 @@ public class ArenaView extends View {
         obstacleImageIDPaint.setColor(getResources().getColor(R.color.white));
         obstacleNumPaint = new Paint();
         obstacleNumPaint.setColor(getResources().getColor(R.color.white));
+        obstacleHeadPaint = new Paint();
+        obstacleHeadPaint.setColor(getResources().getColor(R.color.red_500));
+        exploredObstaclePaint = new Paint();
+        exploredObstaclePaint.setColor(getResources().getColor(R.color.purple_500));
     }
 
     private void createArena(){
@@ -211,7 +206,13 @@ public class ArenaView extends View {
                 txt = String.valueOf(obstacles.get(i).imageID);
                 txtPaint = obstacleImageIDPaint;
             }
-            plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
+            if(obstacles.get(i).explored){
+                //color to be changed
+                plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, exploredObstaclePaint, txtPaint, txt);
+            }else {
+                plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
+            }
+            plotObstacleDir(canvas,obstacles.get(i));
         }
 
         if (Robot.robotMatrix[0][0] != null){// Skip below if Robot not initialized
@@ -252,24 +253,32 @@ public class ArenaView extends View {
                     System.out.println("Coordinates: (" + curCell.col + "," + curCell.row + ")");
                     if(editMap){
                         if(isSetObstacles){
-                            if(curCell.type == ""){
-//                                if (event.getAction() == MotionEvent.ACTION_MOVE)
-//                                    return false;
-                                curCell.type = "obstacle";
-                                obstacles.add(new Obstacle(curCell, false));
-                                System.out.println("Obstacles Coordinates: (" + curCell.col + "," + curCell.row + ")");
-                                // invert y coordinates since algorithm uses bottom left as origin
-                                int xCoord = curCell.col;
-                                int yCoord = ROWS-1-curCell.row;
-                                btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", obstacles.size(), xCoord, yCoord));
-                                invalidate();
-                                break;
+                            if(!obstacleSelected){
+                                if(curCell.type == "" && event.getAction()==MotionEvent.ACTION_UP){
+                                    curCell.type = "obstacle";
+                                    obstacles.add(new Obstacle(curCell, false));
+                                    System.out.println("Obstacles Coordinates: (" + curCell.col + "," + curCell.row + ")");
+                                    // invert y coordinates since algorithm uses bottom left as origin
+                                    int xCoord = curCell.col;
+                                    int yCoord = ROWS-1-curCell.row;
+                                    btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", obstacles.size(), xCoord, yCoord));
+                                    invalidate();
+                                    break;
+                                } else if (curCell.type == "obstacle"){
+                                    obstacleSelected = true;
+                                    for(Obstacle obstacle: obstacles){
+                                        if(obstacle.cell == curCell){
+                                            movingObs = obstacle;
+                                        }
+                                    }
+                                    System.out.println("Obstacle Selected");
+                                }
+                            } else if(obstacleSelected && event.getAction()==MotionEvent.ACTION_UP){
+                                obstacleSelected = false;
+                            } else if(obstacleSelected && event.getAction()==MotionEvent.ACTION_MOVE){
+                                dragObstacle(event, entry.getKey(), movingObs);
                             }
-                            else if (curCell.type == "obstacle"){
-                                // for dragging still doing
-                            }else{
-                                System.out.println("Grid is occupied");
-                            }
+
                         }else if(isSetRobot){
                             setRobot(curCell.col, curCell.row, "N");
                         }
@@ -316,16 +325,11 @@ public class ArenaView extends View {
                     case MotionEvent.ACTION_MOVE:
                         translateX = x - startX;
                         translateY = y - startY;
-//                            translateRectX = rectX - startX;
-//                            translateRectY = rectY - startY;
-//                        System.out.println("move");
                         //We cannot use startX and startY directly because we have adjusted their values using the previous translation values.
                         //This is why we need to add those values to startX and startY so that we can get the actual coordinates of the finger.
                         double distance = Math.sqrt(Math.pow(x - (startX + previousTranslateX), 2) +
                                 Math.pow(y - (startY + previousTranslateY), 2)
                         );
-//                        System.out.println("Rectangle Coordinates: (" + curRect.centerX() + "," + curRect.centerY() + ")");
-//                        System.out.println("Translate Coordinates: (" + translateX + "," + translateY + ")");
 
                         if(distance > 0) {
                             dragged = true;
@@ -431,6 +435,27 @@ public class ArenaView extends View {
         }
     }
 
+    private void dragObstacle(MotionEvent event, Cell curCell, Obstacle obstacle){
+        if(curCell.type ==""){
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_UP:
+                    curCell.type = "obstacle";
+                    obstacle.cell.col = curCell.col;
+                    obstacle.cell.row = curCell.row;
+                    obstacleSelected = false;
+                    break;
+                default:
+                    obstacleSelected = true;
+                    curCell.type = "";
+                    obstacle.cell.col = curCell.col;
+                    obstacle.cell.row = curCell.row;
+                    break;
+            }
+        }
+
+        invalidate();
+    }
+
     private void plotSquare(Canvas canvas, float x, float y, Paint paint, Paint numPaint, String text){
         RectF cellRect = new RectF(
                 (x+0.1f)*cellSize,
@@ -455,32 +480,25 @@ public class ArenaView extends View {
                     numPaint);
         }
     }
-
-    private void moveObstacle(Direction direction, Obstacle obstacle){
-        //resetting the grid type
-        Cell tempKey = new Cell(obstacle.cell.col, obstacle.cell.row, "");
-        gridMap.put(tempKey,gridMap.get(obstacle.cell));
-        System.out.println(gridMap.get(obstacle.cell));
-        System.out.println(gridMap.get(tempKey));
-        //distinguish four cases with switch statement
-        switch(direction){
-            case UP:
-                obstacle.cell = new Cell(obstacle.cell.col, obstacle.cell.row-1);
-                gridMap.remove(obstacle.cell);
-                break;
-            case DOWN:
-                obstacle.cell = new Cell(obstacle.cell.col, obstacle.cell.row+1);
-                gridMap.remove(obstacle.cell);
-                break;
-            case LEFT:
-                obstacle.cell = new Cell(obstacle.cell.col-1, obstacle.cell.row);
-                gridMap.remove(obstacle.cell);
-                break;
-            case RIGHT:
-                obstacle.cell = new Cell(obstacle.cell.col+1, obstacle.cell.row);
-                gridMap.remove(obstacle.cell);
-        }
+    private void plotObstacleDir(Canvas canvas,Obstacle obstacle){
+        RectF cellRect = new RectF(0,0,0,0);
+        if(obstacle.imageDir == "TOP"){
+            cellRect = new RectF((obstacle.cell.col+0.2f)*cellSize, (obstacle.cell.row+0.11f)*cellSize, (obstacle.cell.col+0.9f)*cellSize, (obstacle.cell.row+(1f/3))*cellSize);
+        }else if(obstacle.imageDir == "LEFT"){
+            cellRect = new RectF((obstacle.cell.col+0.11f)*cellSize, (obstacle.cell.row+0.2f)*cellSize, (obstacle.cell.col+(1f/3))*cellSize, (obstacle.cell.row+0.9f)*cellSize);
+        }else if(obstacle.imageDir == "RIGHT"){
+            cellRect = new RectF((obstacle.cell.col+0.8f)*cellSize, (obstacle.cell.row+0.2f)*cellSize, (obstacle.cell.col +1f)*cellSize, (obstacle.cell.row+0.9f)*cellSize);
+        }else if(obstacle.imageDir == "BOTTOM"){
+            cellRect = new RectF((obstacle.cell.col+0.2f)*cellSize, (obstacle.cell.row+(1f/3))*cellSize, (obstacle.cell.col+0.9f)*cellSize, (obstacle.cell.row+0.11f)*cellSize);
+       }
+        int cellRadius = 1000;
+        canvas.drawRoundRect(cellRect, // rect
+                cellRadius, // rx
+                cellRadius, // ry
+                obstacleHeadPaint // Paint
+        );
     }
+
 
     public void setObstacleImageID(String obstacleNumber, String imageID){
         if (Integer.parseInt(obstacleNumber)-1 < obstacles.size()) {
