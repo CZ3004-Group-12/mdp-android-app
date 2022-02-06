@@ -131,8 +131,12 @@ public class BluetoothService {
         mConnectedThread.start();
     }
 
-    public void write(String message){
-        mConnectedThread.write(message.getBytes());
+    public boolean write(String message){
+        if (mConnectedThread != null){
+            mConnectedThread.write(message.getBytes());
+            return true;
+        }
+        return false;
     }
 
     public void disconnect() {

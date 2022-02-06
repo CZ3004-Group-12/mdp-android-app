@@ -258,7 +258,7 @@ public class ArenaView extends View {
                                 curCell.type = "obstacle";
                                 obstacles.add(new Obstacle(curCell, false));
                                 System.out.println("Obstacles Coordinates: (" + curCell.row + "," + curCell.col + ")");
-                                //btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", obstacles.size(), curCell.row, curCell.col));
+                                btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", obstacles.size(), curCell.row, curCell.col));
                                 invalidate();
                                 break;
                             }
