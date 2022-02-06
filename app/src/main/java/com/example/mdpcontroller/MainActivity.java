@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -26,6 +27,7 @@ import com.example.mdpcontroller.arena.ArenaView;
 import com.example.mdpcontroller.arena.Robot;
 import com.example.mdpcontroller.tab.AppDataModel;
 import com.example.mdpcontroller.tab.ExploreTabFragment;
+import com.example.mdpcontroller.tab.ManualTabFragment;
 import com.example.mdpcontroller.tab.PathTabFragment;
 import com.google.android.material.tabs.TabLayout;
 
@@ -65,6 +67,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         adapter = new MainAdapter(getSupportFragmentManager());
         adapter.AddFragment(new ExploreTabFragment(), "Explore");
         adapter.AddFragment(new PathTabFragment(), "Path");
+        adapter.AddFragment(new ManualTabFragment(), "Manual");
         tabViewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(tabViewPager);
 
@@ -232,6 +235,39 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         public CharSequence getPageTitle(int position){
             return stringArrayList.get(position);
         }
+    }
+
+    public void moveBtn(View view){
+        ImageButton pressedBtn = (ImageButton) view;
+        String dir;
+        switch (pressedBtn.getId()){
+            case(R.id.fButton): {
+                dir = "F";
+                break;
+            }
+            case(R.id.rButton): {
+                dir = "R";
+                break;
+            }
+            case(R.id.lButton): {
+                dir = "L";
+                break;
+            }
+            case(R.id.bButton): {
+                dir = "B";
+                break;
+            }
+            case(R.id.brButton): {
+                dir = "BR";
+                break;
+            }
+            case(R.id.blButton): {
+                dir = "BL";
+                break;
+            }
+            default: return;
+        }
+        btService.write(String.format("MOVE/%s", dir));
     }
 
 

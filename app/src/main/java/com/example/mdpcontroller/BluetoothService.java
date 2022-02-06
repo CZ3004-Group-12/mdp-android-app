@@ -136,7 +136,7 @@ public class BluetoothService {
     }
 
     public void disconnect() {
-        mConnectedThread.cancel();
+        if (mConnectedThread != null) mConnectedThread.cancel();
         mConnectedDevice = null;
     }
 

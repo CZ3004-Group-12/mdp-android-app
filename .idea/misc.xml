@@ -6,10 +6,11 @@
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2585" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/drawable/back.xml" value="0.2585" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/drawable/ic_launcher_background.xml" value="0.2585" />
+        <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/drawable/rounded_corner.xml" value="0.1855" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/drawable/tab_indicator.xml" value="0.2585" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/activity_main.xml" value="0.55" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/fragment_explore_tab.xml" value="0.41565533980582525" />
-        <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/fragment_manual_tab.xml" value="0.41565533980582525" />
+        <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/fragment_manual_tab.xml" value="0.5" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/fragment_path_tab.xml" value="0.41565533980582525" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/drawable/tab_indicator.xml" value="0.20555555555555555" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/activity_main.xml" value="0.5" />
