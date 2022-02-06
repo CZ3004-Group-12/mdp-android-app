@@ -91,7 +91,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         appDataModel.getIsSetObstacles().observe(this, data -> {
             arena.isSetObstacles = data;
         });
-        registerReceiver(sendMsgReceiver, new IntentFilter("send_msg"));
+//        registerReceiver(sendMsgReceiver, new IntentFilter("send_msg"));
     }
 
     //BlueTooth
@@ -131,13 +131,13 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         }
     };
 
-    // Create a BroadcastReceiver for send_msg.
-    public BroadcastReceiver sendMsgReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent){
-            String message = intent.getExtras().getString("message");
-            btService.write(message);
-        }
-    };
+//    // Create a BroadcastReceiver for send_msg.
+//    public BroadcastReceiver sendMsgReceiver = new BroadcastReceiver() {
+//        public void onReceive(Context context, Intent intent){
+//            String message = intent.getExtras().getString("message");
+//            btService.write(message);
+//        }
+//    };
 
     // Update robot position and heading
     private void updateRobot(String x, String y, String dir) {
@@ -204,7 +204,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         unregisterReceiver(msgReceiver);
         unregisterReceiver(conReceiver);
         unregisterReceiver(btLostReceiver);
-        unregisterReceiver(sendMsgReceiver);
+//        unregisterReceiver(sendMsgReceiver);
     }
 
 

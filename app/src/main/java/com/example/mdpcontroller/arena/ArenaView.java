@@ -236,8 +236,8 @@ public class ArenaView extends View {
             return true;
         }
 
-        float x = event.getX()/scaleFactor - translateX / scaleFactor;
-        float y = event.getY()/scaleFactor - translateY / scaleFactor;
+        float x = (event.getX()-hMargin)/scaleFactor - translateX / scaleFactor + clipBoundsCanvas.left;
+        float y = (event.getY()-vMargin)/scaleFactor - translateY / scaleFactor + clipBoundsCanvas.top;
         Cell curCell;
         RectF curRect;
 
@@ -247,7 +247,7 @@ public class ArenaView extends View {
             if(curRect != null && curCell != null) {
                 float rectX = curRect.centerX();
                 float rectY = curRect.centerY();
-                if (curRect.contains(x -  (0.25f*(cellSize)), y - ((cellSize)))) {
+                if (curRect.contains(x , y )) {
                     System.out.println(x + " : " + y + " : " + rectX + " : " + rectY + " : " + hMargin + " : " + vMargin + " : " + cellSize);
                     System.out.println("Coordinates: (" + curCell.row + "," + curCell.col + ")");
                     if(editMap){
@@ -255,14 +255,10 @@ public class ArenaView extends View {
                             if(curCell.type == ""){
 //                                if (event.getAction() == MotionEvent.ACTION_MOVE)
 //                                    return false;
-                                Cell tempKey = new Cell(curCell.col, curCell.row, "obstacle");
-                                gridMap.put(tempKey,curRect);
-                                System.out.println(gridMap.get(curCell));
-                                System.out.println(gridMap.get(tempKey));
+                                curCell.type = "obstacle";
                                 obstacles.add(new Obstacle(curCell, false));
                                 System.out.println("Obstacles Coordinates: (" + curCell.row + "," + curCell.col + ")");
-                                //btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", gridMap.size(), curCell.row, curCell.col));
-                                gridMap.remove(curCell);
+                                //btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", obstacles.size(), curCell.row, curCell.col));
                                 invalidate();
                                 break;
                             }
