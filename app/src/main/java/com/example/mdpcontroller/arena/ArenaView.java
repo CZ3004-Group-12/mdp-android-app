@@ -214,7 +214,7 @@ public class ArenaView extends View {
             plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
         }
 
-        if (Robot.robotMatrix[0][0] != null){
+        if (Robot.robotMatrix[0][0] != null){// Skip below if Robot not initialized
             // Paint Robot
             Cell robotCell;
             Paint robotPaint;
@@ -226,34 +226,8 @@ public class ArenaView extends View {
                     plotSquare(canvas,(float) robotCell.col,(float) robotCell.row,robotPaint, null, null);
                 }
             }
-        } // Skip below if Robot not initialized
-
-        // scale and translate rectangles to reflect their actual position
-        // we change their position AFTER they have been drawn
-        // required for accurate touch detection
-//        RectF curRect;
-//        for (int x = 0; x < COLS; x++){
-//            for (int y = 0; y < ROWS; y++) {
-//                curRect = gridMap.get(cells[x][y]);
-//                if (curRect != null){
-//                    curRect.offset(hMargin, vMargin);
-//                    scaleRect(curRect, scaleFactor);
-//                    curRect.offset(translateX/scaleFactor, translateY/scaleFactor);
-//                }
-//            }
-//        }
+        }
     }
-
-//    private void scaleRect(RectF rect, float factor){
-//        float diffHorizontal = (rect.right-rect.left) * (factor-1f);
-//        float diffVertical = (rect.bottom-rect.top) * (factor-1f);
-//
-//        rect.top -= diffVertical/2f;
-//        rect.bottom += diffVertical/2f;
-//
-//        rect.left -= diffHorizontal/2f;
-//        rect.right += diffHorizontal/2f;
-//    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event){
