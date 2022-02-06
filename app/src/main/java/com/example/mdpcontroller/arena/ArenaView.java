@@ -31,6 +31,7 @@ public class ArenaView extends View {
 
     private float scaleFactor = 1.f;
     private ScaleGestureDetector detector;
+    private Rect clipBoundsCanvas;
 
     //These constants specify the mode that we&#039;re in
     private static int NONE = 0;
@@ -84,6 +85,7 @@ public class ArenaView extends View {
         obstacles = new ArrayList<Obstacle>();
         robotCells = new ArrayList<Cell>();
         cells = new Cell[COLS][ROWS];
+        clipBoundsCanvas = new Rect();
         createArena();
         Robot.initializeRobot(cells);
         //change accordingly for testing
@@ -111,9 +113,12 @@ public class ArenaView extends View {
     }
 
     private void createArena(){
+        RectF curRect;
         for (int x = 0; x < COLS; x++){
             for (int y = 0; y < ROWS; y++){
                 cells[x][y] = new Cell(x,y);
+                curRect = new RectF();
+                gridMap.put(cells[x][y], curRect);
             }
         }
     }
@@ -121,6 +126,7 @@ public class ArenaView extends View {
     //called whenever object of the class is called
     @Override
     protected  void onDraw(Canvas canvas){
+        canvas.getClipBounds(clipBoundsCanvas);
         canvas.drawColor(getResources().getColor(R.color.gray_600));
         //size of canvas so that we know how many pixel to work with
         int width = getWidth();
@@ -180,16 +186,19 @@ public class ArenaView extends View {
                 }
 
                 // Paint normal cell
-                RectF cellRect = new RectF((x+0.1f) * cellSize,(y+0.1f) *cellSize,(x+1f)* cellSize,(y+1f)* cellSize);
-                int cellRadius = 10;
-                canvas.drawRoundRect(cellRect, // rect
-                        cellRadius, // rx
-                        cellRadius, // ry
-                        gridPaint // Paint
-                );
-                gridMap.put(cells[x][y], cellRect);
+                RectF cellRect = gridMap.get(cells[x][y]);
+                if(cellRect != null) {
+                    cellRect.set((x + 0.1f) * cellSize, (y + 0.1f) * cellSize, (x + 1f) * cellSize, (y + 1f) * cellSize);
 
+                    int cellRadius = 10;
+                    canvas.drawRoundRect(cellRect, // rect
+                            cellRadius, // rx
+                            cellRadius, // ry
+                            gridPaint // Paint
+                    );
+                }
             }
+
         }
 
         // Paint Obstacles
@@ -205,23 +214,107 @@ public class ArenaView extends View {
             plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
         }
 
-        if (Robot.robotMatrix[0][0] == null) return; // Skip below if Robot not initialized
-
-        // Paint Robot
-        Cell robotCell;
-        Paint robotPaint;
-        for (int i=0; i<Robot.robotMatrix[0].length; i++){ // iterate through rows: i = x coordinate
-            for (int j=0; j<Robot.robotMatrix.length; j++){ // iterate through cols: j = y coordinate
-                robotCell = Robot.robotMatrix[i][j];
-                if(robotCell.type.equals("robotHead")) robotPaint = robotHeadPaint;
-                else robotPaint = robotBodyPaint;
-                plotSquare(canvas,(float) robotCell.col,(float) robotCell.row,robotPaint, null, null);
+        if (Robot.robotMatrix[0][0] != null){
+            // Paint Robot
+            Cell robotCell;
+            Paint robotPaint;
+            for (int i=0; i<Robot.robotMatrix[0].length; i++){ // iterate through rows: i = x coordinate
+                for (int j=0; j<Robot.robotMatrix.length; j++){ // iterate through cols: j = y coordinate
+                    robotCell = Robot.robotMatrix[i][j];
+                    if(robotCell.type.equals("robotHead")) robotPaint = robotHeadPaint;
+                    else robotPaint = robotBodyPaint;
+                    plotSquare(canvas,(float) robotCell.col,(float) robotCell.row,robotPaint, null, null);
+                }
             }
-        }
+        } // Skip below if Robot not initialized
 
+        // scale and translate rectangles to reflect their actual position
+        // we change their position AFTER they have been drawn
+        // required for accurate touch detection
+//        RectF curRect;
+//        for (int x = 0; x < COLS; x++){
+//            for (int y = 0; y < ROWS; y++) {
+//                curRect = gridMap.get(cells[x][y]);
+//                if (curRect != null){
+//                    curRect.offset(hMargin, vMargin);
+//                    scaleRect(curRect, scaleFactor);
+//                    curRect.offset(translateX/scaleFactor, translateY/scaleFactor);
+//                }
+//            }
+//        }
     }
+
+//    private void scaleRect(RectF rect, float factor){
+//        float diffHorizontal = (rect.right-rect.left) * (factor-1f);
+//        float diffVertical = (rect.bottom-rect.top) * (factor-1f);
+//
+//        rect.top -= diffVertical/2f;
+//        rect.bottom += diffVertical/2f;
+//
+//        rect.left -= diffHorizontal/2f;
+//        rect.right += diffHorizontal/2f;
+//    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event){
+        if (!isSetObstacles && !isSetRobot){
+            scaleGrid(event);
+            return true;
+        }
+
+        float x = event.getX()/scaleFactor - translateX / scaleFactor;
+        float y = event.getY()/scaleFactor - translateY / scaleFactor;
+        Cell curCell;
+        RectF curRect;
+
+        for (Map.Entry<Cell, RectF> entry : gridMap.entrySet()) {
+            curCell = entry.getKey();
+            curRect = entry.getValue();
+            if(curRect != null && curCell != null) {
+                float rectX = curRect.centerX();
+                float rectY = curRect.centerY();
+                if (curRect.contains(x -  (0.25f*(cellSize)), y - ((cellSize)))) {
+                    System.out.println(x + " : " + y + " : " + rectX + " : " + rectY + " : " + hMargin + " : " + vMargin + " : " + cellSize);
+                    System.out.println("Coordinates: (" + curCell.row + "," + curCell.col + ")");
+                    if(editMap){
+                        if(isSetObstacles){
+                            if(curCell.type == ""){
+//                                if (event.getAction() == MotionEvent.ACTION_MOVE)
+//                                    return false;
+                                Cell tempKey = new Cell(curCell.col, curCell.row, "obstacle");
+                                gridMap.put(tempKey,curRect);
+                                System.out.println(gridMap.get(curCell));
+                                System.out.println(gridMap.get(tempKey));
+                                obstacles.add(new Obstacle(curCell, false));
+                                System.out.println("Obstacles Coordinates: (" + curCell.row + "," + curCell.col + ")");
+                                //btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", gridMap.size(), curCell.row, curCell.col));
+                                gridMap.remove(curCell);
+                                invalidate();
+                                break;
+                            }
+                            else if (curCell.type == "obstacle"){
+                                // for dragging still doing
+                            }else{
+                                System.out.println("Grid is occupied");
+                            }
+                        }else if(isSetRobot){
+                            setRobot(curCell.col, curCell.row, "N");
+                        }
+                    }else{
+                        if(curCell.type.equals("obstacle")){
+                            System.out.println("POP-UP" + curCell.type);
+                            break;
+                        }
+                    }
+                }
+            }
+
+
+        }
+        return true;
+    }
+
+    private void scaleGrid(MotionEvent event){
         float x = event.getX();
         float y = event.getY();
         Cell curCell;
@@ -235,67 +328,67 @@ public class ArenaView extends View {
                 float translateRectX;
                 float translateRectY;
 
-                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
 
-                        case MotionEvent.ACTION_DOWN:
-                            mode = DRAG;
-                            System.out.println("DOWN");
-                            //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
-                            //amount for each coordinates This works even when we are translating the first time because the initial
-                            //values for these two variables is zero.
-                            startX = event.getX() - previousTranslateX;
-                            startY = event.getY() - previousTranslateY;
-                            break;
+                    case MotionEvent.ACTION_DOWN:
+                        mode = DRAG;
+//                        System.out.println("DOWN");
+                        //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
+                        //amount for each coordinates This works even when we are translating the first time because the initial
+                        //values for these two variables is zero.
+                        startX = x - previousTranslateX;
+                        startY = y - previousTranslateY;
+                        break;
 
-                        case MotionEvent.ACTION_MOVE:
-                            translateX = event.getX() - startX;
-                            translateY = event.getY() - startY;
+                    case MotionEvent.ACTION_MOVE:
+                        translateX = x - startX;
+                        translateY = y - startY;
 //                            translateRectX = rectX - startX;
 //                            translateRectY = rectY - startY;
-                            System.out.println("move");
-                            //We cannot use startX and startY directly because we have adjusted their values using the previous translation values.
-                            //This is why we need to add those values to startX and startY so that we can get the actual coordinates of the finger.
-                            double distance = Math.sqrt(Math.pow(event.getX() - (startX + previousTranslateX), 2) +
-                                    Math.pow(event.getY() - (startY + previousTranslateY), 2)
-                            );
-                            System.out.println("Rectangle Coordinates: (" + curRect.centerX() + "," + curRect.centerY() + ")");
-                            System.out.println("Translate Coordinates: (" + translateX + "," + translateY + ")");
+//                        System.out.println("move");
+                        //We cannot use startX and startY directly because we have adjusted their values using the previous translation values.
+                        //This is why we need to add those values to startX and startY so that we can get the actual coordinates of the finger.
+                        double distance = Math.sqrt(Math.pow(x - (startX + previousTranslateX), 2) +
+                                Math.pow(y - (startY + previousTranslateY), 2)
+                        );
+//                        System.out.println("Rectangle Coordinates: (" + curRect.centerX() + "," + curRect.centerY() + ")");
+//                        System.out.println("Translate Coordinates: (" + translateX + "," + translateY + ")");
 
-                            if(distance > 0) {
-                                dragged = true;
-                            }
+                        if(distance > 0) {
+                            dragged = true;
+                        }
 //                            if (curRect.contains(translateX -  (0.25f*cellSize), translateY -cellSize)) {
 //                                System.out.println("Coordinates: (" + curCell.row + "," + curCell.col + ")");
 //                            }
 
-                            break;
+                        break;
 
-                        case MotionEvent.ACTION_POINTER_DOWN:
-                            mode = ZOOM;
-                            System.out.println("POINTER DOWN");
-                            break;
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        mode = ZOOM;
+//                        System.out.println("POINTER DOWN");
+                        break;
 
-                        case MotionEvent.ACTION_UP:
-                            mode = NONE;
-                            dragged = false;
-                            System.out.println("UP");
-                            //All fingers went up, so let&#039;s save the value of translateX and translateY into previousTranslateX and
-                            //previousTranslate
-                            previousTranslateX = translateX;
-                            previousTranslateY = translateY;
+                    case MotionEvent.ACTION_UP:
+                        mode = NONE;
+                        dragged = false;
+//                        System.out.println("UP");
+                        //All fingers went up, so let&#039;s save the value of translateX and translateY into previousTranslateX and
+                        //previousTranslate
+                        previousTranslateX = translateX;
+                        previousTranslateY = translateY;
 //                            System.out.println("Rectangle Coordinates: (" + curRect.centerX() + "," + curRect.centerY() + ")");
 //                            System.out.println("Translate Coordinates: (" + translateX + "," + translateY + ")");
-                            break;
+                        break;
 
-                        case MotionEvent.ACTION_POINTER_UP:
-                            mode = DRAG;
+                    case MotionEvent.ACTION_POINTER_UP:
+                        mode = DRAG;
 
-                            //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
-                            //and previousTranslateY when the second finger goes up
-                            previousTranslateX = translateX;
-                            previousTranslateY = translateY;
-                            break;
-                    }
+                        //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
+                        //and previousTranslateY when the second finger goes up
+                        previousTranslateX = translateX;
+                        previousTranslateY = translateY;
+                        break;
+                }
             }
 
 
@@ -363,53 +456,6 @@ public class ArenaView extends View {
         if ((mode == DRAG && scaleFactor != 1f && dragged) || mode == ZOOM) {
             invalidate();
         }
-
-
-//        for (Map.Entry<Cell, RectF> entry : gridMap.entrySet()) {
-//            curCell = entry.getKey();
-//            curRect = entry.getValue();
-//            if(curRect != null && curCell != null) {
-//                float rectX = curRect.centerX();
-//                float rectY = curRect.centerY();
-//                if (curRect.contains(x -  (0.25f*cellSize), y -cellSize)) {
-//                    System.out.println(x + " : " + y + " : " + rectX + " : " + rectY + " : " + hMargin + " : " + vMargin + " : " + cellSize);
-//                    System.out.println("Coordinates: (" + curCell.row + "," + curCell.col + ")");
-//                    if(editMap){
-//                        if(isSetObstacles){
-//                            if(curCell.type == ""){
-////                                if (event.getAction() == MotionEvent.ACTION_MOVE)
-////                                    return false;
-//                                Cell tempKey = new Cell(curCell.col, curCell.row, "obstacle");
-//                                gridMap.put(tempKey,curRect);
-//                                System.out.println(gridMap.get(curCell));
-//                                System.out.println(gridMap.get(tempKey));
-//                                obstacles.add(new Obstacle(curCell, false));
-//                                System.out.println("Obstacles Coordinates: (" + curCell.row + "," + curCell.col + ")");
-//                                //btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", gridMap.size(), curCell.row, curCell.col));
-//                                gridMap.remove(curCell);
-//                                invalidate();
-//                                break;
-//                            }
-//                            else if (curCell.type == "obstacle"){
-//                                // for dragging still doing
-//                            }else{
-//                                System.out.println("Grid is occupied");
-//                            }
-//                        }else if(isSetRobot){
-//                            setRobot(curCell.col, curCell.row, "N");
-//                        }
-//                    }else{
-//                        if(curCell.type.equals("obstacle")){
-//                            System.out.println("POP-UP" + curCell.type);
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//
-//
-//        }
-        return true;
     }
 
     private void plotSquare(Canvas canvas, float x, float y, Paint paint, Paint numPaint, String text){
@@ -482,6 +528,7 @@ public class ArenaView extends View {
     public void setBtService(BluetoothService btService){
         this.btService = btService;
     }
+
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
