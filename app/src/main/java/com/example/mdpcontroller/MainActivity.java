@@ -110,7 +110,9 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             switch(messageArr[0]){
                 // Format: ROBOT/<x>/<y>/<dir>
                 case("ROBOT"): {
-                    arena.setRobot(Integer.parseInt(messageArr[1]), Integer.parseInt(messageArr[2]), messageArr[3]);
+                    int xCoord = Integer.parseInt(messageArr[1]);
+                    int yCoord = ArenaView.ROWS-1-Integer.parseInt(messageArr[2]);
+                    arena.setRobot(xCoord, yCoord, messageArr[3]);
                     break;
                 }
                 // Format: TARGET/<num>/<id>

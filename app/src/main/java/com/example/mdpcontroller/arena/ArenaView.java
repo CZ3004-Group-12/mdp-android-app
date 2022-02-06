@@ -67,7 +67,7 @@ public class ArenaView extends View {
         UP, DOWN, LEFT, RIGHT
     }
     private Cell player, exit;
-    private static final int COLS = 20, ROWS = 20;
+    public static final int COLS = 20, ROWS = 20;
     private static final float WALL_THICKNESS = 4;
     public boolean editMap, isSetRobot, isSetObstacles;
     //cell size, horizontal margin and verticl margin
@@ -249,7 +249,7 @@ public class ArenaView extends View {
                 float rectY = curRect.centerY();
                 if (curRect.contains(x , y )) {
                     System.out.println(x + " : " + y + " : " + rectX + " : " + rectY + " : " + hMargin + " : " + vMargin + " : " + cellSize);
-                    System.out.println("Coordinates: (" + curCell.row + "," + curCell.col + ")");
+                    System.out.println("Coordinates: (" + curCell.col + "," + curCell.row + ")");
                     if(editMap){
                         if(isSetObstacles){
                             if(curCell.type == ""){
@@ -257,8 +257,11 @@ public class ArenaView extends View {
 //                                    return false;
                                 curCell.type = "obstacle";
                                 obstacles.add(new Obstacle(curCell, false));
-                                System.out.println("Obstacles Coordinates: (" + curCell.row + "," + curCell.col + ")");
-                                btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", obstacles.size(), curCell.row, curCell.col));
+                                System.out.println("Obstacles Coordinates: (" + curCell.col + "," + curCell.row + ")");
+                                // invert y coordinates since algorithm uses bottom left as origin
+                                int xCoord = curCell.col;
+                                int yCoord = ROWS-1-curCell.row;
+                                btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", obstacles.size(), xCoord, yCoord));
                                 invalidate();
                                 break;
                             }
