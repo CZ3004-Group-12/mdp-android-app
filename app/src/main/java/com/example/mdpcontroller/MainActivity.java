@@ -107,29 +107,35 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             String message =  intent.getExtras().getString("message");
             //Categorize received messages
             String[] messageArr = message.split(DELIMITER);
-            switch(messageArr[0]){
-                // Format: ROBOT/<x>/<y>/<dir>
-                case("ROBOT"): {
-                    int xCoord = Integer.parseInt(messageArr[1]);
-                    int yCoord = ArenaView.ROWS-1-Integer.parseInt(messageArr[2]);
-                    arena.setRobot(xCoord, yCoord, messageArr[3]);
-                    break;
+            try{
+                switch(messageArr[0]){
+                    // Format: ROBOT/<x>/<y>/<dir>
+                    case("ROBOT"): {
+                        int xCoord = Integer.parseInt(messageArr[1]);
+                        int yCoord = ArenaView.ROWS-1-Integer.parseInt(messageArr[2]);
+                        arena.setRobot(xCoord, yCoord, messageArr[3]);
+                        break;
+                    }
+                    // Format: TARGET/<num>/<id>
+                    case("TARGET") :{
+                        arena.setObstacleImageID(messageArr[1], messageArr[2]);
+                        break;
+                    }
+                    // Format: STATUS/<msg>
+                    case("STATUS"): {
+                        displayMessage("Status update: " + messageArr[1]);
+                        break;
+                    }
+                    default: {
+                        // Unrecognized command, only display message if in debug mode
+                        if (DEBUG) displayMessage("DEBUG: " + messageArr[1]);
+                    }
                 }
-                // Format: TARGET/<num>/<id>
-                case("TARGET") :{
-                    arena.setObstacleImageID(messageArr[1], messageArr[2]);
-                    break;
-                }
-                // Format: STATUS/<msg>
-                case("STATUS"): {
-                    displayMessage("Status update: " + messageArr[1]);
-                    break;
-                }
-                default: {
-                    // Unrecognized command, only display message if in debug mode
-                    if (DEBUG) displayMessage("DEBUG: " + messageArr[1]);
-                }
+            } catch(IndexOutOfBoundsException e){
+                // message incorrect message parameters
+                System.out.println("ERROR - Message parameters incorrect: " + message);
             }
+
         }
     };
 
