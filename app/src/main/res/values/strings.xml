@@ -18,4 +18,6 @@
     <string name="start_fastest_path">START FASTEST PATH</string>
     <string name="done">Done</string>
     <string name="set_btn_txt">Set %1$s</string>
+    <string name="debug_mode">Debug Mode</string>
+    <string name="reconnect_as_client">Auto Reconnect As Client</string>
 </resources>

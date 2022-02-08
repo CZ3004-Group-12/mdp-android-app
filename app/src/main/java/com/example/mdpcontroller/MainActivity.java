@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -29,6 +30,7 @@ import com.example.mdpcontroller.tab.AppDataModel;
 import com.example.mdpcontroller.tab.ExploreTabFragment;
 import com.example.mdpcontroller.tab.ManualTabFragment;
 import com.example.mdpcontroller.tab.PathTabFragment;
+import com.example.mdpcontroller.tab.SettingsTabFragment;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import java.util.Calendar;
 
 public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private final String DELIMITER = "/";
-    private final boolean DEBUG = false;
+    private boolean DEBUG = false;
     private BluetoothService btService;
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
     private BtStatusChangedReceiver conReceiver;
@@ -68,6 +70,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         adapter.AddFragment(new ExploreTabFragment(), "Explore");
         adapter.AddFragment(new PathTabFragment(), "Path");
         adapter.AddFragment(new ManualTabFragment(), "Manual");
+        adapter.AddFragment(new SettingsTabFragment(), "Settings");
         tabViewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(tabViewPager);
 
@@ -129,7 +132,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                     }
                     // Format: DEBUG/<msg>
                     case("DEBUG"): {
-                        if (DEBUG) displayMessage("DEBUG: " + messageArr[1]);
+                        if (DEBUG) displayMessage("DEBUG\n" + messageArr[1]);
                         break;
                     }
                     default: {
@@ -194,7 +197,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
                 bt.setText(getResources().getString(R.string.button_bluetooth_disconnected));
                 bt.setBackgroundColor(getResources().getColor(R.color.orange_500));
-                displayMessage("Status update\nDisconnected, waiting for reconnect...");
+                if (BluetoothService.RECONNECT_AS_CLIENT) displayMessage("Status update\nDisconnected, attempting to reconnect...");
+                else displayMessage("Status update\nDisconnected, waiting for reconnect...");
             }
         }
     };
@@ -280,6 +284,16 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
 
     public void clearObstacles(View view){
         arena.clearObstacles();
+    }
+
+    public void toggleDebugMode(View view){
+        DEBUG = !DEBUG;
+        ((CheckedTextView)findViewById(R.id.toggleDebug)).setChecked(DEBUG);
+    }
+
+    public void toggleReconnectAsClient(View view){
+        BluetoothService.RECONNECT_AS_CLIENT = !BluetoothService.RECONNECT_AS_CLIENT;
+        ((CheckedTextView)findViewById(R.id.toggleReconnectAsClient)).setChecked(BluetoothService.RECONNECT_AS_CLIENT);
     }
 
 }

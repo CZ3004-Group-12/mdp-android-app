@@ -31,7 +31,7 @@ public class BluetoothService {
     public static BluetoothAdapter mBluetoothAdapter;
     public static BluetoothSocket mBluetoothSocket;
     public static BluetoothDevice mConnectedDevice;
-    public static final boolean RECONNECT_AS_CLIENT = false;
+    public static boolean RECONNECT_AS_CLIENT = false;
     public enum BluetoothStatus {
         UNCONNECTED, SCANNING, CONNECTING, CONNECTED, DISCONNECTED
     }

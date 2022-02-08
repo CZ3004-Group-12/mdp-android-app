@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="left"
+    android:background="@color/black"
+    tools:context=".tab.SettingsTabFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/top_guideline13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/purple_200"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.33" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/top_guideline15"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/purple_200"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.66" />
+
+    <CheckedTextView
+        android:id="@+id/toggleReconnectAsClient"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#000000"
+        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+        android:checked="false"
+        android:clickable="true"
+        android:gravity="center_vertical"
+        android:onClick="toggleReconnectAsClient"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:text="@string/reconnect_as_client"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/top_guideline15"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toggleDebug"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <CheckedTextView
+        android:id="@+id/toggleDebug"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#000000"
+        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+        android:checked="false"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:onClick="toggleDebugMode"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:text="@string/debug_mode"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:layout_marginTop="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/top_guideline13"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
