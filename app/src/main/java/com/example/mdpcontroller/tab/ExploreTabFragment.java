@@ -47,7 +47,7 @@ public class ExploreTabFragment extends Fragment {
         setRobotBtn.setOnClickListener(item ->{
             if(isSetObstacles){
                 isSetObstacles = false;
-                setObstaclesBtn.setText("Set Obstacles");
+                setRobotBtn.setText(R.string.set_obstacles);
                 isSetRobot = btnAction(isSetRobot, setRobotBtn, "robot");
             }else{
                 isSetRobot = btnAction(isSetRobot, setRobotBtn, "robot");
@@ -58,7 +58,7 @@ public class ExploreTabFragment extends Fragment {
         setObstaclesBtn.setOnClickListener(item ->{
             if(isSetRobot){
                 isSetRobot = false;
-                setRobotBtn.setText("Set Robot");
+                setRobotBtn.setText(R.string.set_robot);
                 isSetObstacles = btnAction(isSetObstacles, setObstaclesBtn, "obstacles");
             }else{
                 isSetObstacles = btnAction(isSetObstacles, setObstaclesBtn, "obstacles");
@@ -79,11 +79,11 @@ public class ExploreTabFragment extends Fragment {
         }
         if(btnVal){
             btnVal = false;
-            btn.setText("Set " + btnText);
+            btn.setText(String.format(getString(R.string.set_btn_txt), btnText));
         }
         else{
             btnVal = true;
-            btn.setText("Done");
+            btn.setText(R.string.done);
         }
         return btnVal;
     }

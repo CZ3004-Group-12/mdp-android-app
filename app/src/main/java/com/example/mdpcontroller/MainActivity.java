@@ -278,6 +278,16 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         btService.write(String.format("MOVE/%s", dir));
     }
 
+    public void startExplore(View view){
+        btService.write("STARTEXPLORE");
+    }
 
+    public void startPath(View view){
+        btService.write("STARTPATH");
+    }
+
+    public void clearObstacles(View view){
+        arena.clearObstacles();
+    }
 
 }

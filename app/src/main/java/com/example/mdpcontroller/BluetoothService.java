@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.provider.Settings;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -24,6 +25,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class BluetoothService {
     public static BluetoothAdapter mBluetoothAdapter;
@@ -136,6 +138,7 @@ public class BluetoothService {
             mConnectedThread.write(message.getBytes());
             return true;
         }
+        Toast.makeText(mContext, "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
         return false;
     }
 

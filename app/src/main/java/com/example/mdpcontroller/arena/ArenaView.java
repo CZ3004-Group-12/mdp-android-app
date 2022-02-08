@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 
 public class ArenaView extends View {
     //Zoom & Scroll
@@ -543,5 +544,19 @@ public class ArenaView extends View {
             scaleFactor = Math.max(MIN_ZOOM, Math.min(scaleFactor, MAX_ZOOM));
             return true;
         }
+    }
+
+    public void clearObstacles(){
+        for(int i=0; i<obstacles.size(); i++){
+            btService.write(String.format(Locale.getDefault(),"DELETE/%02d", i));
+            // Delay message sending so the multiple messages are interpreted separately
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch(Exception e){
+                System.out.println(e.getMessage());
+            }
+        }
+        obstacles.clear();
+        invalidate();
     }
 }

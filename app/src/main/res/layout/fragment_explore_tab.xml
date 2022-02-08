@@ -78,6 +78,7 @@
         android:layout_marginRight="10dp"
         android:layout_marginBottom="2dp"
         android:background="@color/purple_700"
+        android:onClick="clearObstacles"
         android:text="@string/clear_obstacles"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -87,7 +88,7 @@
         app:layout_constraintTop_toTopOf="@+id/top_guideline15" />
 
     <Button
-        android:id="@+id/startExplore"
+        android:id="@+id/startPath"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_alignParentTop="true"
@@ -98,6 +99,7 @@
         android:layout_marginRight="10dp"
         android:layout_marginBottom="1dp"
         android:background="@color/purple_700"
+        android:onClick="startExplore"
         android:text="@string/start_explore"
         android:textSize="16sp"
         app:icon="@drawable/ic_baseline_play_circle_outline_24"
@@ -106,8 +108,10 @@
         app:iconSize="32sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/top_guideline10"
-        app:layout_constraintTop_toTopOf="@+id/top_guideline13" />
+        app:layout_constraintTop_toTopOf="@+id/top_guideline13"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/textView2"
