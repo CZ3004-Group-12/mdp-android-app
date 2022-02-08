@@ -212,17 +212,14 @@ public class ArenaView extends View {
             // Default: Paint obstacle with no Image ID
             String txt = String.valueOf(i+1);
             Paint txtPaint = obstacleNumPaint;
+            Paint obsPaint = obstaclePaint;
             // Paint obstacle with Image ID
-            if (!obstacles.get(i).imageID.equals("-1")) {
+            if (obstacles.get(i).explored) {
                 txt = String.valueOf(obstacles.get(i).imageID);
                 txtPaint = obstacleImageIDPaint;
+                obsPaint = exploredObstaclePaint;
             }
-            if(obstacles.get(i).explored){
-                //color to be changed
-                plotSquare(canvas,(float) obstacles.get(i).cell.col+1,(float) obstacles.get(i).cell.row, exploredObstaclePaint, txtPaint, txt);
-            }else {
-                plotSquare(canvas,(float) obstacles.get(i).cell.col+1,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
-            }
+            plotSquare(canvas,(float) obstacles.get(i).cell.col+1,(float) obstacles.get(i).cell.row, obsPaint, txtPaint, txt);
             plotObstacleDir(canvas,obstacles.get(i));
         }
 
@@ -267,7 +264,7 @@ public class ArenaView extends View {
                             if(!obstacleSelected){
                                 if(curCell.type == "" && event.getAction()==MotionEvent.ACTION_UP){
                                     curCell.type = "obstacle";
-                                    obstacles.add(new Obstacle(curCell, false));
+                                    obstacles.add(new Obstacle(curCell));
                                     System.out.println("Obstacles Coordinates: (" + curCell.col + "," + curCell.row + ")");
                                     // invert y coordinates since algorithm uses bottom left as origin
                                     int xCoord = curCell.col;
@@ -447,7 +444,7 @@ public class ArenaView extends View {
     }
 
     private void dragObstacle(MotionEvent event, Cell curCell, Obstacle obstacle){
-        if(curCell.type ==""){
+        if(curCell.type.equals("")){
             switch (event.getAction()) {
                 case MotionEvent.ACTION_UP:
                     curCell.type = "obstacle";
@@ -493,15 +490,21 @@ public class ArenaView extends View {
     }
     private void plotObstacleDir(Canvas canvas,Obstacle obstacle){
         RectF cellRect = new RectF(0,0,0,0);
-        if(obstacle.imageDir == "TOP"){
-            cellRect = new RectF((obstacle.cell.col+0.2f)*cellSize, (obstacle.cell.row+0.11f)*cellSize, (obstacle.cell.col+0.9f)*cellSize, (obstacle.cell.row+(1f/3))*cellSize);
-        }else if(obstacle.imageDir == "LEFT"){
-            cellRect = new RectF((obstacle.cell.col+0.11f)*cellSize, (obstacle.cell.row+0.2f)*cellSize, (obstacle.cell.col+(1f/3))*cellSize, (obstacle.cell.row+0.9f)*cellSize);
-        }else if(obstacle.imageDir == "RIGHT"){
-            cellRect = new RectF((obstacle.cell.col+0.8f)*cellSize, (obstacle.cell.row+0.2f)*cellSize, (obstacle.cell.col +1f)*cellSize, (obstacle.cell.row+0.9f)*cellSize);
-        }else if(obstacle.imageDir == "BOTTOM"){
-            cellRect = new RectF((obstacle.cell.col+0.2f)*cellSize, (obstacle.cell.row+(1f/3))*cellSize, (obstacle.cell.col+0.9f)*cellSize, (obstacle.cell.row+0.11f)*cellSize);
-       }
+        // For all plotting of rectangles, need to +1 to the col value to account for the grid numbers
+        switch (obstacle.imageDir) {
+            case "TOP":
+                cellRect = new RectF((obstacle.cell.col + 0.2f + 1) * cellSize, (obstacle.cell.row + 0.11f) * cellSize, (obstacle.cell.col + 0.9f + 1) * cellSize, (obstacle.cell.row + (1f / 4)) * cellSize);
+                break;
+            case "LEFT":
+                cellRect = new RectF((obstacle.cell.col + 0.11f + 1) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + (1f / 4) + 1) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
+                break;
+            case "RIGHT":
+                cellRect = new RectF((obstacle.cell.col + (1f / 4) + 1) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + 1f + 1) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
+                break;
+            case "BOTTOM":
+                cellRect = new RectF((obstacle.cell.col + 0.2f + 1) * cellSize, (obstacle.cell.row + (1f / 4)) * cellSize, (obstacle.cell.col + 0.9f + 1) * cellSize, (obstacle.cell.row + 0.11f) * cellSize);
+                break;
+        }
         int cellRadius = 1000;
         canvas.drawRoundRect(cellRect, // rect
                 cellRadius, // rx
@@ -513,7 +516,9 @@ public class ArenaView extends View {
 
     public void setObstacleImageID(String obstacleNumber, String imageID){
         if (Integer.parseInt(obstacleNumber)-1 < obstacles.size()) {
-            obstacles.get(Integer.parseInt(obstacleNumber)-1).setImageID(imageID);
+            Obstacle obs = obstacles.get(Integer.parseInt(obstacleNumber)-1);
+            obs.imageID = imageID;
+            obs.explored = true;
             invalidate();
         }
     }
