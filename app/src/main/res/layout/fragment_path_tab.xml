@@ -33,7 +33,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="10dp"
         android:background="@color/purple_700"
-        android:onClick="startPath"
+        android:onClick="startStopTimer"
         android:text="@string/start_fastest_path"
         android:textSize="16sp"
         app:icon="@drawable/ic_baseline_play_circle_outline_24"
@@ -48,7 +48,7 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/timerTextViewPath"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/time_placeholder"

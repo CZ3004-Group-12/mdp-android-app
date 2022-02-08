@@ -50,6 +50,7 @@ public class BluetoothService {
     public AcceptThread mAcceptThread;
     public ConnectAsClientThread mClientThread;
     public Activity mContext;
+    public boolean allowWrite = true;
 
 
 
@@ -134,7 +135,7 @@ public class BluetoothService {
     }
 
     public boolean write(String message){
-        if (mConnectedThread != null){
+        if (mConnectedThread != null && allowWrite){
             mConnectedThread.write(message.getBytes());
             return true;
         }

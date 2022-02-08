@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
@@ -35,10 +36,12 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private final String DELIMITER = "/";
-    private boolean DEBUG = false;
+    public boolean DEBUG = false;
+    public boolean RUN_TO_END = false;
     private BluetoothService btService;
     private BluetoothService.BluetoothLostReceiver btLostReceiver;
     private BtStatusChangedReceiver conReceiver;
@@ -46,6 +49,12 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private AppDataModel appDataModel;
     private ArenaView arena;
     private PathTabFragment pathFrag;
+    private ExploreTabFragment exploreTabFragment;
+    private PathTabFragment pathTabFragment;
+
+    // for timer
+    private final Handler timerHandler  = new Handler();
+    TimerRunnable timerRunnable = null;
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
@@ -209,6 +218,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         unregisterReceiver(msgReceiver);
         unregisterReceiver(conReceiver);
         unregisterReceiver(btLostReceiver);
+        timerHandler.removeCallbacks(timerRunnable);
     }
 
 
@@ -274,14 +284,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         btService.write(String.format("MOVE/%s", dir));
     }
 
-    public void startExplore(View view){
-        btService.write("STARTEXPLORE");
-    }
-
-    public void startPath(View view){
-        btService.write("STARTPATH");
-    }
-
     public void clearObstacles(View view){
         arena.clearObstacles();
     }
@@ -294,6 +296,76 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     public void toggleReconnectAsClient(View view){
         BluetoothService.RECONNECT_AS_CLIENT = !BluetoothService.RECONNECT_AS_CLIENT;
         ((CheckedTextView)findViewById(R.id.toggleReconnectAsClient)).setChecked(BluetoothService.RECONNECT_AS_CLIENT);
+    }
+
+    public void toggleRunToEnd(View view){
+        RUN_TO_END = !RUN_TO_END;
+        ((CheckedTextView)findViewById(R.id.toggleRunToEnd)).setChecked(RUN_TO_END);
+    }
+
+    private class TimerRunnable implements Runnable {
+        private TextView timerTextView;
+        private long startTime = 0;
+        public TimerRunnable(TextView timerTextView){
+            this.timerTextView = timerTextView;
+        }
+        @Override
+        public void run(){
+            long millis = System.currentTimeMillis() - startTime;
+            int seconds = (int) (millis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+
+            timerTextView.setText(String.format(Locale.getDefault(),"%02d:%02d", minutes, seconds));
+
+            timerHandler.postDelayed(this, 500);
+        }
+    }
+
+    public void startStopTimer(View view){
+        Button b = (Button)view;
+        if (timerRunnable != null) { // timer was running, reset the timer and send stop command
+            if (b.getId() == R.id.startExplore){
+                b.setText(R.string.start_explore);
+            } else {
+                b.setText(R.string.start_fastest_path);
+            }
+            timerHandler.removeCallbacks(timerRunnable);
+            timerRunnable.timerTextView.setText(R.string.time_placeholder);
+            timerRunnable = null;
+            toggleActivateButtons(true);
+            btService.write("STOP");
+        }
+        else{ // start timer
+            String cmd;
+            if (b.getId() == R.id.startExplore){
+                timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
+                cmd = "STARTEXPLORE";
+                b.setText(R.string.stop_explore);
+            } else {
+                timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewPath));
+                cmd = "STARTPATH";
+                b.setText(R.string.stop_fastest_path);
+            }
+            timerRunnable.startTime = System.currentTimeMillis();
+            timerHandler.postDelayed(timerRunnable, 0);
+            btService.write(cmd);
+            toggleActivateButtons(false);
+        }
+    }
+
+    private void toggleActivateButtons(boolean val){
+        // deactivate obstacle and robot setting when robot is moving
+        appDataModel.setIsSetObstacles(false);
+        appDataModel.setIsSetRobot(false);
+        findViewById(R.id.setObstacles).setEnabled(val);
+        findViewById(R.id.setRobot).setEnabled(val);
+        findViewById(R.id.clearObstacles).setEnabled(val);
+        if (RUN_TO_END) {
+            btService.allowWrite = val; // block all outward communication to robot
+            findViewById(R.id.startExplore).setEnabled(val);
+            findViewById(R.id.startPath).setEnabled(val);
+        }
     }
 
 }

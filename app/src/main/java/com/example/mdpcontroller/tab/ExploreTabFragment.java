@@ -19,11 +19,11 @@ import com.example.mdpcontroller.R;
 
 public class ExploreTabFragment extends Fragment {
     View view;
-    private Button setRobotBtn;
-    private Button setObstaclesBtn;
+    public Button setRobotBtn;
+    public Button setObstaclesBtn;
 
-    private boolean isSetRobot;
-    private boolean isSetObstacles;
+    public boolean isSetRobot;
+    public boolean isSetObstacles;
     private boolean isRobotMove;
     private boolean isRobotStop;
     private boolean isReset;

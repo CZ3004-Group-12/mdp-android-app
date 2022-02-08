@@ -11,13 +11,16 @@
     <string name="connected">Connected</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="start_explore">Start Explore</string>
+    <string name="stop_explore">Stop Explore</string>
     <string name="clear_obstacles">Clear Obstacles</string>
     <string name="set_obstacles">Set Obstacles</string>
     <string name="set_robot">Set Robot</string>
     <string name="time_placeholder">00:00</string>
-    <string name="start_fastest_path">START FASTEST PATH</string>
+    <string name="start_fastest_path">Start Fastest Path</string>
+    <string name="stop_fastest_path">Stop Fastest Path</string>
     <string name="done">Done</string>
     <string name="set_btn_txt">Set %1$s</string>
     <string name="debug_mode">Debug Mode</string>
     <string name="reconnect_as_client">Auto Reconnect As Client</string>
+    <string name="prevent_input_on_movement">Prevent Input On Movement</string>
 </resources>
