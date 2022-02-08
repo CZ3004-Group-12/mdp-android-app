@@ -144,6 +144,14 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                         if (DEBUG) displayMessage("DEBUG\n" + messageArr[1]);
                         break;
                     }
+                    case("FINISH"):{
+                        if (messageArr[1].equals("EXPLORE")){
+                            startStopTimer(findViewById(R.id.startExplore));
+                        } else {
+                            startStopTimer(findViewById(R.id.startPath));
+                        }
+                        break;
+                    }
                     default: {
                         displayMessage("ERROR (Unrecognized command)\n" + messageArr[0]);
                     }
@@ -323,6 +331,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     }
 
     public void startStopTimer(View view){
+        // TODO Send all obstacles on pressing this button, remove sending when placing
+        // TODO bug fix for crash on bluetooth disconnect
         Button b = (Button)view;
         if (timerRunnable != null) { // timer was running, reset the timer and send stop command
             if (b.getId() == R.id.startExplore){
@@ -331,7 +341,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                 b.setText(R.string.start_fastest_path);
             }
             timerHandler.removeCallbacks(timerRunnable);
-            timerRunnable.timerTextView.setText(R.string.time_placeholder);
             timerRunnable = null;
             toggleActivateButtons(true);
             btService.write("STOP");
@@ -340,11 +349,11 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             String cmd;
             if (b.getId() == R.id.startExplore){
                 timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
-                cmd = "STARTEXPLORE";
+                cmd = "START/EXPLORE";
                 b.setText(R.string.stop_explore);
             } else {
                 timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewPath));
-                cmd = "STARTPATH";
+                cmd = "START/PATH";
                 b.setText(R.string.stop_fastest_path);
             }
             timerRunnable.startTime = System.currentTimeMillis();
@@ -359,8 +368,11 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         appDataModel.setIsSetObstacles(false);
         appDataModel.setIsSetRobot(false);
         findViewById(R.id.setObstacles).setEnabled(val);
+        ((Button)findViewById(R.id.setRobot)).setText(R.string.set_obstacles);
         findViewById(R.id.setRobot).setEnabled(val);
+        ((Button)findViewById(R.id.setRobot)).setText(R.string.set_robot);
         findViewById(R.id.clearObstacles).setEnabled(val);
+        // TODO deactivate pager
         if (RUN_TO_END) {
             btService.allowWrite = val; // block all outward communication to robot
             findViewById(R.id.startExplore).setEnabled(val);
