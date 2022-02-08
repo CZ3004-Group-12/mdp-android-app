@@ -204,7 +204,7 @@ public class BluetoothService {
             } catch (IOException e) {
                 fail = true;
                 Intent intent = new Intent("message_received");
-                intent.putExtra("message", "Socket creation failed");
+                intent.putExtra("message", "DEBUG/Socket creation failed");
                 context.sendBroadcast(intent);
             }
             // Establish the Bluetooth socket connection.
@@ -218,21 +218,21 @@ public class BluetoothService {
                     BluetoothService.mBluetoothSocket.close();
                 } catch (IOException e2) {
                     Intent intent = new Intent("message_received");
-                    intent.putExtra("message", "Socket creation failed");
+                    intent.putExtra("message", "DEBUG/Socket creation failed");
                     context.sendBroadcast(intent);
                 }
             }
             System.out.println("ends");
             if(!fail) {
                 Intent intent = new Intent("message_received");
-                intent.putExtra("message", "Connected!");
+                intent.putExtra("message", "DEBUG/Connected!");
                 context.sendBroadcast(intent);
                 Map<String, String> extra = new HashMap<>();
                 extra.put("device", !name.equals("null") ? name : address);
                 BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.CONNECTED, extra, context);
             } else {
                 Intent intent = new Intent("message_received");
-                intent.putExtra("message", "Connection Failed");
+                intent.putExtra("message", "DEBUG/Connection Failed");
                 context.sendBroadcast(intent);
                 Map<String, String> extra = new HashMap<>();
                 BluetoothService.setBtStatus(BluetoothStatus.UNCONNECTED, extra, context);
@@ -276,7 +276,7 @@ public class BluetoothService {
                     Map<String, String> extra = new HashMap<>();
                     extra.put("device", !name.equals("null") ? name : address);
                     Intent intent = new Intent("message_received");
-                    intent.putExtra("message", "Connected!");
+                    intent.putExtra("message", "DEBUG/Connected!");
                     context.sendBroadcast(intent);
                     BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.CONNECTED, extra, context);
                     try {
@@ -341,7 +341,7 @@ public class BluetoothService {
                     intent.putExtra("message", new String(buffer, 0, numBytes));
                     mContext.sendBroadcast(intent);
                 } catch (IOException e) {
-                    System.out.println("Input stream was disconnected " + e.getMessage());
+                    System.out.println("DEBUG/Input stream was disconnected " + e.getMessage());
                     setBtStatus(BluetoothStatus.DISCONNECTED, new HashMap<>(), mContext);
                     break;
                 }
@@ -357,7 +357,7 @@ public class BluetoothService {
 
                 // Send a failure message back to the activity.
                 Intent intent = new Intent("message_received");
-                intent.putExtra("message", "Couldn't send data to the other device");
+                intent.putExtra("message", "DEBUG/Couldn't send data to the other device");
                 mContext.sendBroadcast(intent);
             }
         }
@@ -387,7 +387,7 @@ public class BluetoothService {
             if (getBtStatus() == BluetoothStatus.DISCONNECTED) {
                 Intent intent2 = new Intent("message_received");
                 if (RECONNECT_AS_CLIENT){
-                    intent2.putExtra("message", "Connection lost, attempting to reconnect...");
+                    intent2.putExtra("message", "DEBUG/Connection lost, attempting to reconnect...");
                     context.sendBroadcast(intent2);
                     if(getBtStatus() == BluetoothStatus.DISCONNECTED && mConnectedDevice != null) {
                         for (int i = 0; i < MAX_RECONNECT_RETRIES; i++) {
@@ -399,7 +399,7 @@ public class BluetoothService {
                             }
                             try {
                                 intent2 = new Intent("message_received");
-                                intent2.putExtra("message", "Reconnect attempt " + i + " failed");
+                                intent2.putExtra("message", "DEBUG/Reconnect attempt " + i + " failed");
                                 context.sendBroadcast(intent2);
                                 Thread.sleep(2000);
                             } catch (InterruptedException e) {
@@ -409,13 +409,13 @@ public class BluetoothService {
                     }
                     // Max tries elapsed
                     intent2 = new Intent("message_received");
-                    intent2.putExtra("message", "Reconnect failed");
+                    intent2.putExtra("message", "DEBUG/Reconnect failed");
                     context.sendBroadcast(intent2);
                     setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<>(), (Activity) context);
                 }
                 else {
                     // reconnect as server
-                    intent2.putExtra("message", "Connection lost, making device discoverable...");
+                    intent2.putExtra("message", "DEBUG/Connection lost, making device discoverable...");
                     context.sendBroadcast(intent2);
                     serverStartListen(main);
                 }

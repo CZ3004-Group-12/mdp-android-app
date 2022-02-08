@@ -91,7 +91,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         appDataModel.getIsSetObstacles().observe(this, data -> {
             arena.isSetObstacles = data;
         });
-//        registerReceiver(sendMsgReceiver, new IntentFilter("send_msg"));
+
+        displayMessage("Status updates will appear here");
     }
 
     //BlueTooth
@@ -123,34 +124,25 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                     }
                     // Format: STATUS/<msg>
                     case("STATUS"): {
-                        displayMessage("Status update: " + messageArr[1]);
+                        displayMessage("Status update\n" + messageArr[1]);
+                        break;
+                    }
+                    // Format: DEBUG/<msg>
+                    case("DEBUG"): {
+                        if (DEBUG) displayMessage("DEBUG: " + messageArr[1]);
                         break;
                     }
                     default: {
-                        // Unrecognized command, only display message if in debug mode
-                        if (DEBUG) displayMessage("DEBUG: " + messageArr[1]);
+                        displayMessage("ERROR (Unrecognized command)\n" + messageArr[0]);
                     }
                 }
             } catch(IndexOutOfBoundsException e){
                 // message incorrect message parameters
-                System.out.println("ERROR - Message parameters incorrect: " + message);
+                displayMessage("ERROR (Incorrect message format)\n" + message);
             }
 
         }
     };
-
-//    // Create a BroadcastReceiver for send_msg.
-//    public BroadcastReceiver sendMsgReceiver = new BroadcastReceiver() {
-//        public void onReceive(Context context, Intent intent){
-//            String message = intent.getExtras().getString("message");
-//            btService.write(message);
-//        }
-//    };
-
-    // Update robot position and heading
-    private void updateRobot(String x, String y, String dir) {
-
-    }
 
     // Displays a string in the log TextView, prepends time received as well
     private void displayMessage(String msg) {
@@ -191,7 +183,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                 String devName = intent.getStringExtra("device");
                 bt.setText(String.format(getResources().getString(R.string.button_bluetooth_connected), devName));
                 bt.setBackgroundColor(getResources().getColor(R.color.green_500));
-
+                displayMessage("Status update\nConnected");
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED) {
                 btService.disconnect();
@@ -202,6 +194,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
                 bt.setText(getResources().getString(R.string.button_bluetooth_disconnected));
                 bt.setBackgroundColor(getResources().getColor(R.color.orange_500));
+                displayMessage("Status update\nDisconnected, waiting for reconnect...");
             }
         }
     };
@@ -212,7 +205,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         unregisterReceiver(msgReceiver);
         unregisterReceiver(conReceiver);
         unregisterReceiver(btLostReceiver);
-//        unregisterReceiver(sendMsgReceiver);
     }
 
 
