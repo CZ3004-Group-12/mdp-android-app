@@ -72,7 +72,8 @@ public class ArenaView extends View {
     public boolean editMap, isSetRobot, isSetObstacles;
     //cell size, horizontal margin and verticl margin
     private float cellSize, hMargin, vMargin;
-    private Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint;
+    private final Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,
+            exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint, gridNumberPaint;
 
     //For random generator to pick unvisited neighbour
     private Random random;
@@ -110,6 +111,8 @@ public class ArenaView extends View {
         obstacleImageIDPaint.setColor(getResources().getColor(R.color.white));
         obstacleNumPaint = new Paint();
         obstacleNumPaint.setColor(getResources().getColor(R.color.white));
+        gridNumberPaint = new Paint();
+        gridNumberPaint.setColor(getResources().getColor(R.color.white));
     }
 
     private void createArena(){
@@ -132,13 +135,14 @@ public class ArenaView extends View {
         int width = getWidth();
         int height = getHeight();
         if (width/height < COLS/ROWS)
-            cellSize = width/(COLS+1);
+            cellSize = width/(COLS+2);
         else
-            cellSize = height/(ROWS+1);
+            cellSize = height/(ROWS+2);
         obstacleImageIDPaint.setTextSize(cellSize/2);
         obstacleNumPaint.setTextSize(cellSize/4);
-        hMargin = (width-COLS*cellSize)/2;
-        vMargin = (height-ROWS*cellSize)/2;
+        gridNumberPaint.setTextSize(cellSize/2);
+        hMargin = (width-(COLS+1)*cellSize)/2;
+        vMargin = (height-(ROWS+1)*cellSize)/2;
         canvas.translate(hMargin,vMargin);
         //We&#039;re going to scale the X and Y coordinates by the same amount
         canvas.scale(scaleFactor, scaleFactor);
@@ -168,25 +172,32 @@ public class ArenaView extends View {
         //We need to divide by the scale factor here, otherwise we end up with excessive panning based on our zoom level
         //because the translation amount also gets scaled according to how much we&#039;ve zoomed into the canvas.
         canvas.translate(translateX / scaleFactor, translateY / scaleFactor);
-        for (int x = 0; x < COLS; x++){
-            for (int y = 0; y < ROWS; y++){
+
+        //draw grid numbers
+        for (int i=0; i<COLS; i++){
+            plotSquare(canvas,0,i, wallPaint, gridNumberPaint, String.valueOf(COLS-1-i));
+            plotSquare(canvas,i+1,ROWS, wallPaint, gridNumberPaint, String.valueOf(i));
+        }
+
+        for (int x = 1; x < COLS+1; x++){ // col 0 is for grid number
+            for (int y = 0; y < ROWS; y++){ // row ROWS is for grid number
 
                 // Paint walls
-                if(cells[x][y].topWall){
+                if(cells[x-1][y].topWall){
                     canvas.drawLine( x* cellSize, y *cellSize, (x+1)* cellSize,y*cellSize, wallPaint);
                 }
-                if(cells[x][y].bottomWall){
+                if(cells[x-1][y].bottomWall){
                     canvas.drawLine( x* cellSize, (y+1) *cellSize, (x+1)* cellSize,(y+1)*cellSize, wallPaint);
                 }
-                if(cells[x][y].leftWall){
+                if(cells[x-1][y].leftWall){
                     canvas.drawLine( x* cellSize, y *cellSize, x* cellSize,(y+1)*cellSize, wallPaint);
                 }
-                if(cells[x][y].rightWall){
+                if(cells[x-1][y].rightWall){
                     canvas.drawLine( (x+1)* cellSize, y *cellSize, (x+1)* cellSize,(y+1)*cellSize, wallPaint);
                 }
 
                 // Paint normal cell
-                RectF cellRect = gridMap.get(cells[x][y]);
+                RectF cellRect = gridMap.get(cells[x-1][y]);
                 if(cellRect != null) {
                     cellRect.set((x + 0.1f) * cellSize, (y + 0.1f) * cellSize, (x + 1f) * cellSize, (y + 1f) * cellSize);
 
@@ -211,7 +222,7 @@ public class ArenaView extends View {
                 txt = String.valueOf(obstacles.get(i).imageID);
                 txtPaint = obstacleImageIDPaint;
             }
-            plotSquare(canvas,(float) obstacles.get(i).cell.col,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
+            plotSquare(canvas,(float) obstacles.get(i).cell.col + 1,(float) obstacles.get(i).cell.row, obstaclePaint, txtPaint, txt);
         }
 
         if (Robot.robotMatrix[0][0] != null){// Skip below if Robot not initialized
@@ -223,7 +234,7 @@ public class ArenaView extends View {
                     robotCell = Robot.robotMatrix[i][j];
                     if(robotCell.type.equals("robotHead")) robotPaint = robotHeadPaint;
                     else robotPaint = robotBodyPaint;
-                    plotSquare(canvas,(float) robotCell.col,(float) robotCell.row,robotPaint, null, null);
+                    plotSquare(canvas,(float) robotCell.col+1,(float) robotCell.row,robotPaint, null, null);
                 }
             }
         }
