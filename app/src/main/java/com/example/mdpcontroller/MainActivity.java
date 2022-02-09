@@ -27,6 +27,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.mdpcontroller.arena.ArenaView;
+import com.example.mdpcontroller.arena.Cell;
+import com.example.mdpcontroller.arena.Obstacle;
 import com.example.mdpcontroller.arena.Robot;
 import com.example.mdpcontroller.tab.AppDataModel;
 import com.example.mdpcontroller.tab.ExploreTabFragment;
@@ -38,6 +40,7 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     private final String DELIMITER = "/";
@@ -70,8 +73,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         ((TextView)findViewById(R.id.btMessageTextView)).setMovementMethod(new ScrollingMovementMethod());
         ((ScrollView)findViewById(R.id.SCROLLER_ID)).fullScroll(View.FOCUS_DOWN);
         arena = findViewById(R.id.arena);
-        // Pass btService to arena
-        arena.setBtService(btService);
 
         //Tab-Layout
         tabLayout = findViewById(R.id.tabLayout);
@@ -313,7 +314,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     }
 
     private class TimerRunnable implements Runnable {
-        private TextView timerTextView;
+        private final TextView timerTextView;
         private long startTime = 0;
         public TimerRunnable(TextView timerTextView){
             this.timerTextView = timerTextView;
@@ -352,6 +353,18 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
                 timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
                 cmd = "START/EXPLORE";
                 b.setText(R.string.stop_explore);
+                Cell curCell;
+                int xCoord, yCoord;
+                for (int i=0; i<arena.obstacles.size(); i++){
+                    curCell = arena.obstacles.get(i).cell;
+                    xCoord = curCell.col;
+                    yCoord = ArenaView.ROWS-1-curCell.row; // invert y coordinates since algorithm uses bottom left as origin
+                    btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", i, xCoord, yCoord));
+                    delay(200);
+                    btService.write(String.format(Locale.getDefault(),"FACE/%02d/%s", i, arena.obstacles.get(i).imageDir));
+                    delay(200);
+                }
+
             } else {
                 timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewPath));
                 cmd = "START/PATH";
@@ -362,6 +375,19 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             btService.write(cmd);
             toggleActivateButtons(false);
         }
+    }
+
+    /**
+     * Delay message sending so the multiple messages are interpreted separately
+     * @param mils milliseconds to sleep for
+     */
+    private void delay(long mils){
+        try {
+            TimeUnit.MILLISECONDS.sleep(mils);
+        } catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+
     }
 
     private void toggleActivateButtons(boolean val){

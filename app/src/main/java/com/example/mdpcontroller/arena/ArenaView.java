@@ -62,15 +62,13 @@ public class ArenaView extends View {
     //Arena
     private Cell[][] cells;
     private Map<Cell, RectF> gridMap;
-    private ArrayList<Obstacle> obstacles;
+    public ArrayList<Obstacle> obstacles;
     private Obstacle movingObs;
     public static final int COLS = 20, ROWS = 20;
     public boolean editMap, isSetRobot, isSetObstacles,obstacleSelected;
     private float cellSize, hMargin, vMargin;
     private final Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,
             exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint, gridNumberPaint, obstacleHeadPaint,exploredObstaclePaint;
-
-    private BluetoothService btService;
 
 
     public ArenaView(Context context, @Nullable AttributeSet attrs) {
@@ -267,10 +265,6 @@ public class ArenaView extends View {
                                     curCell.type = "obstacle";
                                     obstacles.add(new Obstacle(curCell));
                                     System.out.println("Obstacles Coordinates: (" + curCell.col + "," + curCell.row + ")");
-                                    // invert y coordinates since algorithm uses bottom left as origin
-                                    int xCoord = curCell.col;
-                                    int yCoord = ROWS-1-curCell.row;
-                                    btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", obstacles.size(), xCoord, yCoord));
                                     invalidate();
                                     break;
                                 } else if (curCell.type == "obstacle"){
@@ -533,10 +527,6 @@ public class ArenaView extends View {
         }
     }
 
-    public void setBtService(BluetoothService btService){
-        this.btService = btService;
-    }
-
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
@@ -547,15 +537,6 @@ public class ArenaView extends View {
     }
 
     public void clearObstacles(){
-        for(int i=0; i<obstacles.size(); i++){
-            btService.write(String.format(Locale.getDefault(),"DELETE/%02d", i));
-            // Delay message sending so the multiple messages are interpreted separately
-            try {
-                TimeUnit.MILLISECONDS.sleep(100);
-            } catch(Exception e){
-                System.out.println(e.getMessage());
-            }
-        }
         obstacles.clear();
         invalidate();
     }

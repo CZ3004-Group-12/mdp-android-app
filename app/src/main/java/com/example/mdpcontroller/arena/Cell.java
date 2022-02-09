@@ -8,7 +8,7 @@ public class Cell {
             rightWall = true,
             visited = false;
     String type = "";
-    int col, row;
+    public int col, row;
     public Cell (int col, int row){
         this.col = col;
         this.row = row;
