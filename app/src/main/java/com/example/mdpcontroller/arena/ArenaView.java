@@ -1,5 +1,6 @@
 package com.example.mdpcontroller.arena;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,11 +11,15 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.PopupWindow;
 
 import androidx.annotation.Nullable;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.mdpcontroller.BluetoothService;
 import com.example.mdpcontroller.R;
+import com.example.mdpcontroller.tab.AppDataModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,14 +66,17 @@ public class ArenaView extends View {
 
     //Arena
     private Cell[][] cells;
-    private Map<Cell, RectF> gridMap;
+    public Map<Cell, RectF> gridMap;
     public ArrayList<Obstacle> obstacles;
-    private Obstacle movingObs;
+    public Obstacle editingObs;
     public static final int COLS = 20, ROWS = 20;
-    public boolean editMap, isSetRobot, isSetObstacles,obstacleSelected;
+    public boolean isEditMap, isSetRobot, isSetObstacles,obstacleSelected, obstacleEdit;
     private float cellSize, hMargin, vMargin;
     private final Paint wallPaint,gridPaint,textPaint, robotBodyPaint, robotHeadPaint,obstaclePaint,
             exploredGridPaint, obstacleNumPaint, obstacleImageIDPaint, gridNumberPaint, obstacleHeadPaint,exploredObstaclePaint;
+    Cell maxRight,maxLeft;
+
+
 
 
     public ArenaView(Context context, @Nullable AttributeSet attrs) {
@@ -79,8 +87,6 @@ public class ArenaView extends View {
         clipBoundsCanvas = new Rect();
         createArena();
         Robot.initializeRobot(cells);
-        //change accordingly for testing
-        editMap = true;
         detector = new ScaleGestureDetector(getContext(), new ScaleListener());
 
         wallPaint = new Paint();
@@ -125,7 +131,6 @@ public class ArenaView extends View {
     protected  void onDraw(Canvas canvas){
         canvas.getClipBounds(clipBoundsCanvas);
         canvas.drawColor(getResources().getColor(R.color.gray_600));
-        //size of canvas so that we know how many pixel to work with
         int width = getWidth();
         int height = getHeight();
         if (width/height < COLS/ROWS)
@@ -239,9 +244,12 @@ public class ArenaView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event){
-        if (!isSetObstacles && !isSetRobot){
+        if (!isSetObstacles && !isSetRobot && !obstacleEdit){
             scaleGrid(event);
             return true;
+        }
+        if(isSetObstacles || isSetRobot){
+            isEditMap = true;
         }
 
         float x = (event.getX()-hMargin)/scaleFactor - translateX / scaleFactor + clipBoundsCanvas.left;
@@ -252,13 +260,18 @@ public class ArenaView extends View {
         for (Map.Entry<Cell, RectF> entry : gridMap.entrySet()) {
             curCell = entry.getKey();
             curRect = entry.getValue();
+            if(curCell.col== 0 && curCell.row == 0){
+                maxLeft = entry.getKey();
+            }else if(curCell.col== 19 && curCell.row == 19){
+                maxRight = entry.getKey();
+            }
             if(curRect != null && curCell != null) {
                 float rectX = curRect.centerX();
                 float rectY = curRect.centerY();
                 if (curRect.contains(x , y )) {
                     System.out.println(x + " : " + y + " : " + rectX + " : " + rectY + " : " + hMargin + " : " + vMargin + " : " + cellSize);
                     System.out.println("Coordinates: (" + curCell.col + "," + curCell.row + ")");
-                    if(editMap){
+                    if(isEditMap){
                         if(isSetObstacles){
                             if(!obstacleSelected){
                                 if(curCell.type == "" && event.getAction()==MotionEvent.ACTION_UP){
@@ -268,27 +281,46 @@ public class ArenaView extends View {
                                     invalidate();
                                     break;
                                 } else if (curCell.type == "obstacle"){
-                                    obstacleSelected = true;
                                     for(Obstacle obstacle: obstacles){
                                         if(obstacle.cell == curCell){
-                                            movingObs = obstacle;
+                                            editingObs = obstacle;
+                                            System.out.println("Obstacles Coordinates: (" + editingObs.cell.col + "," + editingObs.cell.row + ")");
                                         }
                                     }
+                                    obstacleSelected = true;
                                     System.out.println("Obstacle Selected");
                                 }
                             } else if(obstacleSelected && event.getAction()==MotionEvent.ACTION_UP){
+                                if(curCell.col == editingObs.cell.col && curCell.row == editingObs.cell.row && curCell.type==""){
+                                    curCell.type = "obstacle";
+                                }
+                                invalidate();
                                 obstacleSelected = false;
                             } else if(obstacleSelected && event.getAction()==MotionEvent.ACTION_MOVE){
-                                dragObstacle(event, entry.getKey(), movingObs);
+                                dragObstacle(event, entry.getKey(), editingObs);
+
                             }
 
                         }else if(isSetRobot){
                             setRobot(curCell.col, curCell.row, "N");
                         }
-                    }else{
-                        if(curCell.type.equals("obstacle")){
-                            System.out.println("POP-UP" + curCell.type);
-                            break;
+                    }
+                    else{
+                        //obstacleEdit(event,curCell);
+                        System.out.println("hello");
+                        obstacleEdit = false;
+                    }
+                } else if(obstacleSelected && editingObs != null && isSetObstacles){
+                    //Obstacle delete
+                    if(event.getAction() ==MotionEvent.ACTION_MOVE){
+                        if(x < gridMap.get(maxLeft).centerX() || x > gridMap.get(maxRight).centerX()){
+                            System.out.println("usdhdfdf");
+                            if(editingObs != null){
+                                obstacles.remove(editingObs);
+                                obstacleSelected = false;
+                                invalidate();
+                            }
+
                         }
                     }
                 }
@@ -300,6 +332,7 @@ public class ArenaView extends View {
     }
 
     private void scaleGrid(MotionEvent event){
+        isEditMap = false;
         float x = event.getX();
         float y = event.getY();
         Cell curCell;
@@ -317,7 +350,6 @@ public class ArenaView extends View {
 
                     case MotionEvent.ACTION_DOWN:
                         mode = DRAG;
-//                        System.out.println("DOWN");
                         //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
                         //amount for each coordinates This works even when we are translating the first time because the initial
                         //values for these two variables is zero.
@@ -337,32 +369,26 @@ public class ArenaView extends View {
                         if(distance > 0) {
                             dragged = true;
                         }
-//                            if (curRect.contains(translateX -  (0.25f*cellSize), translateY -cellSize)) {
-//                                System.out.println("Coordinates: (" + curCell.row + "," + curCell.col + ")");
-//                            }
-
                         break;
 
                     case MotionEvent.ACTION_POINTER_DOWN:
                         mode = ZOOM;
-//                        System.out.println("POINTER DOWN");
                         break;
 
                     case MotionEvent.ACTION_UP:
                         mode = NONE;
                         dragged = false;
-//                        System.out.println("UP");
                         //All fingers went up, so let&#039;s save the value of translateX and translateY into previousTranslateX and
                         //previousTranslate
                         previousTranslateX = translateX;
                         previousTranslateY = translateY;
-//                            System.out.println("Rectangle Coordinates: (" + curRect.centerX() + "," + curRect.centerY() + ")");
-//                            System.out.println("Translate Coordinates: (" + translateX + "," + translateY + ")");
+                        setObstacleEdit(event,curCell,curRect);
+
+
                         break;
 
                     case MotionEvent.ACTION_POINTER_UP:
                         mode = DRAG;
-
                         //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
                         //and previousTranslateY when the second finger goes up
                         previousTranslateX = translateX;
@@ -373,90 +399,53 @@ public class ArenaView extends View {
 
 
         }
-//        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-//
-//            case MotionEvent.ACTION_DOWN:
-//                mode = DRAG;
-//
-//                //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
-//                //amount for each coordinates This works even when we are translating the first time because the initial
-//                //values for these two variables is zero.
-//                startX = event.getX() - previousTranslateX;
-//                startY = event.getY() - previousTranslateY;
-//                break;
-//
-//            case MotionEvent.ACTION_MOVE:
-//                translateX = event.getX() - startX;
-//                translateY = event.getY() - startY;
-//
-//                //We cannot use startX and startY directly because we have adjusted their values using the previous translation values.
-//                //This is why we need to add those values to startX and startY so that we can get the actual coordinates of the finger.
-//                double distance = Math.sqrt(Math.pow(event.getX() - (startX + previousTranslateX), 2) +
-//                        Math.pow(event.getY() - (startY + previousTranslateY), 2)
-//                );
-//
-//                if(distance > 0) {
-//                    dragged = true;
-//                }
-//
-//                break;
-//
-//            case MotionEvent.ACTION_POINTER_DOWN:
-//                mode = ZOOM;
-//                break;
-//
-//            case MotionEvent.ACTION_UP:
-//                mode = NONE;
-//                dragged = false;
-//
-//                //All fingers went up, so let&#039;s save the value of translateX and translateY into previousTranslateX and
-//                //previousTranslate
-//                previousTranslateX = translateX;
-//                previousTranslateY = translateY;
-//                break;
-//
-//            case MotionEvent.ACTION_POINTER_UP:
-//                mode = DRAG;
-//
-//                //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
-//                //and previousTranslateY when the second finger goes up
-//                previousTranslateX = translateX;
-//                previousTranslateY = translateY;
-//                break;
-//        }
 
         detector.onTouchEvent(event);
 
-        //We redraw the canvas only in the following cases:
-        //
-        // o The mode is ZOOM
-        //        OR
-        // o The mode is DRAG and the scale factor is not equal to 1 (meaning we have zoomed) and dragged is
-        //   set to true (meaning the finger has actually moved)
         if ((mode == DRAG && scaleFactor != 1f && dragged) || mode == ZOOM) {
             invalidate();
         }
     }
 
     private void dragObstacle(MotionEvent event, Cell curCell, Obstacle obstacle){
+        int index = obstacles.indexOf(obstacle);
         if(curCell.type.equals("")){
-            switch (event.getAction()) {
+        switch (event.getAction()) {
                 case MotionEvent.ACTION_UP:
-                    curCell.type = "obstacle";
-                    obstacle.cell.col = curCell.col;
-                    obstacle.cell.row = curCell.row;
-                    obstacleSelected = false;
+                    if(obstacles.size() != 0){
+                        curCell.setType("obstacle");
+                        obstacles.get(index).cell = curCell;
+                        obstacleSelected = false;
+                    }
                     break;
                 default:
-                    obstacleSelected = true;
-                    curCell.type = "";
-                    obstacle.cell.col = curCell.col;
-                    obstacle.cell.row = curCell.row;
+                    if(obstacles.size() != 0){
+                        obstacleSelected = true;
+                        curCell.type = "";
+                        obstacles.get(index).cell = curCell;
+                    }
+
                     break;
             }
         }
 
         invalidate();
+    }
+    private void setObstacleEdit(MotionEvent event, Cell curCell, RectF curRect){
+        float x = (event.getX()-hMargin)/scaleFactor - translateX / scaleFactor + clipBoundsCanvas.left;
+        float y = (event.getY()-vMargin)/scaleFactor - translateY / scaleFactor + clipBoundsCanvas.top;
+        if (curRect.contains(x , y )) {
+            for(Obstacle obstacle: obstacles){
+                if(obstacle.cell == curCell){
+                    obstacleEdit = true;
+                    editingObs = obstacle;
+                    if (dataEventListener != null) {
+                        dataEventListener.onEventOccurred();
+                    }
+                }
+            }
+        }
+
     }
 
     private void plotSquare(Canvas canvas, float x, float y, Paint paint, Paint numPaint, String text){
@@ -466,7 +455,7 @@ public class ArenaView extends View {
                 (x+1f)*cellSize,
                 (y+1f)*cellSize);
         int cellRadius = 10;
-        canvas.drawRoundRect(cellRect, // rect
+        canvas.drawRoundRect(cellRect, // rectf
                 cellRadius, // rx
                 cellRadius, // ry
                 paint // Paint
@@ -494,10 +483,11 @@ public class ArenaView extends View {
                 cellRect = new RectF((obstacle.cell.col + 0.11f + 1) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + (1f / 4) + 1) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
                 break;
             case "RIGHT":
-                cellRect = new RectF((obstacle.cell.col + (1f / 4) + 1) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + 1f + 1) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
+                cellRect = new RectF((obstacle.cell.col+ 0.2f + 1.5f) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + 1f + 1) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
                 break;
             case "BOTTOM":
-                cellRect = new RectF((obstacle.cell.col + 0.2f + 1) * cellSize, (obstacle.cell.row + (1f / 4)) * cellSize, (obstacle.cell.col + 0.9f + 1) * cellSize, (obstacle.cell.row + 0.11f) * cellSize);
+                cellRect = new RectF((obstacle.cell.col+ 0.2f + 1) * cellSize, (obstacle.cell.row+  1f)* cellSize, (obstacle.cell.col + 0.9f + 1) * cellSize, (obstacle.cell.row + (0.75f))*cellSize);
+                //(1f), canvasHeight, 1f*canvasWidth, (1f/1.25f)*canvasHeight
                 break;
         }
         int cellRadius = 1000;
@@ -539,5 +529,14 @@ public class ArenaView extends View {
     public void clearObstacles(){
         obstacles.clear();
         invalidate();
+    }
+    public interface DataEventListener {
+        public void onEventOccurred();
+    }
+
+    private DataEventListener dataEventListener;
+
+    public void setEventListener(DataEventListener dataEventListener) {
+        this.dataEventListener = dataEventListener;
     }
 }

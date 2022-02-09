@@ -3,6 +3,7 @@ package com.example.mdpcontroller;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -10,11 +11,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.method.ScrollingMovementMethod;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 import com.example.mdpcontroller.arena.ArenaView;
 import com.example.mdpcontroller.arena.Cell;
 import com.example.mdpcontroller.arena.Obstacle;
+import com.example.mdpcontroller.arena.ObstacleDialogueFragment;
 import com.example.mdpcontroller.arena.Robot;
 import com.example.mdpcontroller.tab.AppDataModel;
 import com.example.mdpcontroller.tab.ExploreTabFragment;
@@ -41,10 +43,11 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
+public class MainActivity<ActivityResultLauncher> extends AppCompatActivity implements ObstacleDialogueFragment.DialogDataListener {
     private final String DELIMITER = "/";
     public boolean DEBUG = false;
     public boolean RUN_TO_END = false;
@@ -97,18 +100,24 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         btLostReceiver = btService.new BluetoothLostReceiver(this);
         registerReceiver(btLostReceiver, new IntentFilter("bt_status_changed"));
 
-        //Getting data from fragment and assigning to view variable.
         appDataModel = new ViewModelProvider(this).get(AppDataModel.class);
 
         appDataModel.getIsSetRobot().observe(this, data -> {
-            // Perform an action with the latest item data
             arena.isSetRobot = data;
         });
         appDataModel.getIsSetObstacles().observe(this, data -> {
             arena.isSetObstacles = data;
         });
-
         displayMessage("Status updates will appear here");
+        arena.setEventListener(new ArenaView.DataEventListener() {
+            @Override
+            public void onEventOccurred() {
+                if(arena.obstacleEdit == true){
+                    showObstacleDialog();
+                }
+            }
+        });
+        //registerReceiver(sendMsgReceiver, new IntentFilter("send_msg"));
     }
 
     //BlueTooth
@@ -418,6 +427,52 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             findViewById(R.id.startExplore).setEnabled(val);
             findViewById(R.id.startPath).setEnabled(val);
         }
+    }
+    private void showObstacleDialog() {
+        int obsIndex = arena.obstacles.indexOf(arena.editingObs);
+        int obsX = arena.editingObs.getCell().getRow();
+        int obsY = arena.editingObs.getCell().getCol();
+        System.out.println(obsX+ "hello TESTING" + obsY);
+        String imageDir=arena.editingObs.getImageDir();
+        String imageID=arena.editingObs.getImageID();
+
+        ObstacleDialogueFragment obstacleDialogueFragment =
+                ObstacleDialogueFragment.newInstance(obsIndex,imageID,imageDir,obsX,obsY);
+        obstacleDialogueFragment.show(getFragmentManager(),"hello");
+        obstacleDialogueFragment.setCancelable(false);
+    }
+    @Override
+    public void dialogData(int obsIndex,String imageID, String imageDir, int x, int y) {
+        Cell curCell;
+        RectF curRect;
+        for (Map.Entry<Cell, RectF> entry : arena.gridMap.entrySet()) {
+            curCell = entry.getKey();
+            curRect = entry.getValue();
+            if(arena.obstacles.get(obsIndex).getCell() == curCell){
+                curCell.setType("");
+            }
+            if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() == ""){
+                curCell.setType("obstacle");
+                arena.obstacles.get(obsIndex).setImageDir(imageDir);
+                arena.obstacles.get(obsIndex).setImageID(imageID);
+                arena.obstacles.get(obsIndex).setCell(curCell);
+            }else if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() != ""){
+                arena.obstacles.get(obsIndex).setImageDir(imageDir);
+                arena.obstacles.get(obsIndex).setImageID(imageID);
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        "Grid is already occupied",
+                        Toast.LENGTH_SHORT);
+
+                toast.show();
+            }
+        }
+        System.out.println(imageDir+ " , "+ x+" , "+y +" , "+imageID);
+        //arena.obstacleSelected = false;
+        arena.invalidate();
+    }
+    @Override
+    public void setObstacleEdit(boolean obsEdit) {
+        arena.obstacleEdit = obsEdit;
     }
 
 }
