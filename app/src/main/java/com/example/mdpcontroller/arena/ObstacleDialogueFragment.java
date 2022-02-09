@@ -38,7 +38,7 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
 
     private RelativeLayout relativeLayout;
     private Spinner  imageDir;
-    private EditText xPos,yPos,imageID;
+    private EditText xPos,yPos;
     private Button cancelBtn, submitBtn;
     private ObstacleEditDrawing obstacleView;
     String[] Directions = { "TOP", "LEFT", "RIGHT", "BOTTOM" };
@@ -85,9 +85,7 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
         int spinnerPos = adapter.getPosition(spinnerVal);
         imageDir.setSelection(spinnerPos);
         obstacleView.imageDir = spinnerVal;
-        imageID = view.findViewById(R.id.imageId);
         obstacleView.imageID = Integer.parseInt(getArguments().getString("OBSID"));
-        imageID.setText(obstacleView.imageID.toString());
         imageDir.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
@@ -100,32 +98,6 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
 
             }
 
-        });
-        imageID.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start,
-                                          int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start,
-                                      int before, int count) {
-                try{
-                    if(s.length() != 0){
-                        obstacleView.imageID = Integer.parseInt(s.toString());
-                        obstacleView.invalidate();
-                    }
-                } catch(NumberFormatException ex){ // handle your exception
-                    System.out.println("contains -");
-                }
-
-
-            }
         });
         xPos.addTextChangedListener(new TextWatcher() {
 
@@ -186,8 +158,7 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
             @Override
             public void onClick(View v) {
                 boolean obstacleEdit = false;
-                dialogDataListener.dialogData(getArguments().getInt("OBSINDEX"),
-                        obstacleView.imageID.toString(),imageDir.getSelectedItem().toString(), obstacleView.x, obstacleView.y);
+                dialogDataListener.dialogData(getArguments().getInt("OBSINDEX"),imageDir.getSelectedItem().toString(), obstacleView.x, obstacleView.y);
                 dialogDataListener.setObstacleEdit(false);
                 getDialog().dismiss();
             }
@@ -196,7 +167,7 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
 
     }
     public interface DialogDataListener {
-        void dialogData(int obsIndex,String imageID, String imageDir, int x, int y);
+        void dialogData(int obsIndex, String imageDir, int x, int y);
         void setObstacleEdit(boolean obsEdit);
     }
     DialogDataListener dialogDataListener;

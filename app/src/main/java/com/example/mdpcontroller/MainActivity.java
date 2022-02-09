@@ -427,8 +427,13 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
         int obsX = arena.editingObs.getCell().getRow();
         int obsY = arena.editingObs.getCell().getCol();
         System.out.println(obsX+ "hello TESTING" + obsY);
-        String imageDir=arena.editingObs.getImageDir();
-        String imageID=arena.editingObs.getImageID();
+        String imageDir=arena.editingObs.getImageDir();;
+        String imageID;
+        if(arena.editingObs.explored == false){
+             imageID=Integer.toString(obsIndex+1);
+        }else{
+            imageID = arena.editingObs.getImageID();
+        }
 
         ObstacleDialogueFragment obstacleDialogueFragment =
                 ObstacleDialogueFragment.newInstance(obsIndex,imageID,imageDir,obsX,obsY);
@@ -436,7 +441,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
         obstacleDialogueFragment.setCancelable(false);
     }
     @Override
-    public void dialogData(int obsIndex,String imageID, String imageDir, int x, int y) {
+    public void dialogData(int obsIndex, String imageDir, int x, int y) {
         Cell curCell;
         RectF curRect;
         for (Map.Entry<Cell, RectF> entry : arena.gridMap.entrySet()) {
@@ -448,11 +453,9 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
             if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() == ""){
                 curCell.setType("obstacle");
                 arena.obstacles.get(obsIndex).setImageDir(imageDir);
-                arena.obstacles.get(obsIndex).setImageID(imageID);
                 arena.obstacles.get(obsIndex).setCell(curCell);
             }else if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() != ""){
                 arena.obstacles.get(obsIndex).setImageDir(imageDir);
-                arena.obstacles.get(obsIndex).setImageID(imageID);
                 Toast toast = Toast.makeText(getApplicationContext(),
                         "Grid is already occupied",
                         Toast.LENGTH_SHORT);
@@ -460,8 +463,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 toast.show();
             }
         }
-        System.out.println(imageDir+ " , "+ x+" , "+y +" , "+imageID);
-        //arena.obstacleSelected = false;
         arena.invalidate();
     }
     @Override

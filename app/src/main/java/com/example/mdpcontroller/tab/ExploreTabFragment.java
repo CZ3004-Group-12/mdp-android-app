@@ -73,10 +73,10 @@ public class ExploreTabFragment extends Fragment {
 
     private boolean btnAction(boolean btnVal, Button btn, String btnText){
         // ensure that obstacles and robot are only set when bluetooth is connected
-        if (BluetoothService.getBtStatus() != BluetoothService.BluetoothStatus.CONNECTED){
-            Toast.makeText(getContext(), "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
-            return false;
-        }
+//        if (BluetoothService.getBtStatus() != BluetoothService.BluetoothStatus.CONNECTED){
+//            Toast.makeText(getContext(), "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
+//            return false;
+//        }
         if(btnVal){
             btnVal = false;
             btn.setText(String.format(getString(R.string.set_btn_txt), btnText));

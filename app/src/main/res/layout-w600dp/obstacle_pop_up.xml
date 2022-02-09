@@ -12,28 +12,18 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:background="@color/gray_700">
+
         <RelativeLayout
             android:id="@+id/obstacleCanvas"
-            android:layout_width="200dp"
-            android:layout_height="209dp"
+            android:layout_width="152dp"
+            android:layout_height="148dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_marginTop="30dp"
-            android:layout_marginEnd="57dp"
-            android:layout_marginRight="57dp" />
+            android:layout_marginEnd="60dp"
+            android:layout_marginRight="62dp" />
 
-        <!--        <View-->
-        <!--            android:id="@+id/obstacleCanvas"-->
-        <!--            class="com.example.mdpcontroller.arena.ObstacleEditDrawing"-->
-        <!--            android:layout_width="200dp"-->
-        <!--            android:layout_height="209dp"-->
-        <!--            android:layout_alignParentTop="true"-->
-        <!--            android:layout_alignParentEnd="true"-->
-        <!--            android:layout_alignParentRight="true"-->
-        <!--            android:layout_marginTop="30dp"-->
-        <!--            android:layout_marginEnd="57dp"-->
-        <!--            android:layout_marginRight="57dp" />-->
 
         <Button
             android:id="@+id/submitBtn"
@@ -60,18 +50,6 @@
             android:layout_marginTop="30dp"
             android:layout_marginBottom="30dp"
             android:text="Cancel" />
-
-        <EditText
-            android:id="@+id/imageId"
-            android:layout_width="170dp"
-            android:layout_height="50dp"
-            android:layout_below="@+id/textView2"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            android:layout_marginStart="60dp"
-            android:layout_marginLeft="60dp"
-            android:layout_marginTop="10dp"
-            android:textSize="16sp" />
 
         <Spinner
             android:id="@+id/imageDirSpinner"
@@ -112,28 +90,14 @@
             tools:ignore="SpeakableTextPresentCheck" />
 
         <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginStart="60dp"
-            android:layout_marginLeft="63dp"
-            android:layout_marginTop="30dp"
-            android:text="Image ID: "
-            android:textStyle="bold" />
-
-        <TextView
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/imageId"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_marginStart="60dp"
             android:layout_marginLeft="60dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="30dp"
             android:text="Image Direction: "
             android:textStyle="bold" />
 
