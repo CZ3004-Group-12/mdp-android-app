@@ -346,7 +346,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     public void startStopTimer(View view){
         if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
             Button b = (Button) view;
-            List<String> cmds = new ArrayList<>();
             if (timerRunnable != null) { // timer was running, reset the timer and send stop command
                 if (b.getId() == R.id.startExplore) {
                     b.setText(R.string.start_explore);
@@ -358,13 +357,13 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 toggleActivateButtons(true);
                 btService.write("STOP");
             } else { // start timer
-                cmds.add("RESET");
                 if (b.getId() == R.id.startExplore) {
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
                     b.setText(R.string.stop_explore);
                     Cell curCell;
                     int xCoord, yCoord;
                     String dir = "0";
+                    StringBuilder cmd = new StringBuilder("START/EXPLORE");
                     for (int i = 0; i < arena.obstacles.size(); i++) {
                         switch(arena.obstacles.get(i).imageDir){
                             case("TOP"): dir = "0"; break;
@@ -375,41 +374,22 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         curCell = arena.obstacles.get(i).cell;
                         xCoord = curCell.col;
                         yCoord = ArenaView.ROWS - 1 - curCell.row; // invert y coordinates since algorithm uses bottom left as origin
-                        cmds.add(String.format(Locale.getDefault(), "CREATE/%02d/%02d/%02d/%s", i, xCoord, yCoord, dir));
+                        cmd.append(String.format(Locale.getDefault(), "/(%02d,%02d,%02d,%s)", i, xCoord, yCoord, dir));
                     }
-                    cmds.add("START/EXPLORE");
+                    btService.write(cmd.toString());
                 } else {
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewPath));
-                    cmds.add("START/PATH");
+                    btService.write("START/PATH");
                     b.setText(R.string.stop_fastest_path);
                 }
                 timerRunnable.startTime = System.currentTimeMillis();
                 timerHandler.postDelayed(timerRunnable, 0);
-                delaySend(cmds, 200);
                 toggleActivateButtons(false);
             }
         } else {
-            // writing over bluetooth may create toasts, which will crash the app if run in another thread
+            // disable start task if bluetooth not connected
             Toast.makeText(this, "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    /**
-     * Delay message sending so the multiple messages are interpreted separately
-     * Sends in separate thread so it does not block UI
-     * @param mils milliseconds to sleep for
-     */
-    private void delaySend(List<String> cmds, long mils){
-        new Thread(() -> {
-            for (String cmd: cmds){
-                btService.write(cmd);
-                try {
-                    TimeUnit.MILLISECONDS.sleep(mils);
-                } catch(Exception e){
-                    System.out.println(e.getMessage());
-                }
-            }
-        }).start();
     }
 
     private void toggleActivateButtons(boolean val){
