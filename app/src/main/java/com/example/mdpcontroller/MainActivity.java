@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -372,7 +373,13 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
         findViewById(R.id.setRobot).setEnabled(val);
         ((Button)findViewById(R.id.setRobot)).setText(R.string.set_robot);
         findViewById(R.id.clearObstacles).setEnabled(val);
-        // TODO deactivate pager
+        // disable tabs
+        TabLayout tabLayout = findViewById(R.id.tabLayout);
+        LinearLayout tabStrip = ((LinearLayout)tabLayout.getChildAt(0));
+        tabStrip.setEnabled(val);
+        for(int i = 0; i < tabStrip.getChildCount(); i++) {
+            tabStrip.getChildAt(i).setClickable(val);
+        }
         if (RUN_TO_END) {
             btService.allowWrite = val; // block all outward communication to robot
             findViewById(R.id.startExplore).setEnabled(val);
