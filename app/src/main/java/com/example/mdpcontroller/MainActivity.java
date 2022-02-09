@@ -139,7 +139,14 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     case("ROBOT"): {
                         int xCoord = Integer.parseInt(messageArr[1]);
                         int yCoord = ArenaView.ROWS-1-Integer.parseInt(messageArr[2]);
-                        arena.setRobot(xCoord, yCoord, messageArr[3]);
+                        String dir = "N";
+                        switch(messageArr[3]){
+                            case("0"): dir="N";break;
+                            case("90"): dir="W";break;
+                            case("-90"): dir="E";break;
+                            case("180"): dir="S";break;
+                        }
+                        arena.setRobot(xCoord, yCoord, dir);
                         break;
                     }
                     // Format: TARGET/<num>/<id>
