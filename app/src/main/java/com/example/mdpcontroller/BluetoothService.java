@@ -50,7 +50,6 @@ public class BluetoothService {
     public AcceptThread mAcceptThread;
     public ConnectAsClientThread mClientThread;
     public Activity mContext;
-    public boolean allowWrite = true;
 
 
 
@@ -135,12 +134,12 @@ public class BluetoothService {
     }
 
     public boolean write(String message){
-        if (mConnectedThread != null && allowWrite){
-            mConnectedThread.write(message.getBytes());
-            return true;
+        if (mConnectedThread == null){
+            Toast.makeText(mContext, "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
+            return false;
         }
-        Toast.makeText(mContext, "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
-        return false;
+        mConnectedThread.write(message.getBytes());
+        return true;
     }
 
     public void disconnect() {

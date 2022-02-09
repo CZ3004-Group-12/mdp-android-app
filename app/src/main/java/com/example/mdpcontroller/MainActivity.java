@@ -25,6 +25,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mdpcontroller.arena.ArenaView;
 import com.example.mdpcontroller.arena.Cell;
@@ -39,6 +40,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -333,71 +335,77 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
     }
 
     public void startStopTimer(View view){
-        // TODO Send all obstacles on pressing this button, remove sending when placing
-        // TODO bug fix for crash on bluetooth disconnect
-        Button b = (Button)view;
-        if (timerRunnable != null) { // timer was running, reset the timer and send stop command
-            if (b.getId() == R.id.startExplore){
-                b.setText(R.string.start_explore);
-            } else {
-                b.setText(R.string.start_fastest_path);
-            }
-            timerHandler.removeCallbacks(timerRunnable);
-            timerRunnable = null;
-            toggleActivateButtons(true);
-            btService.write("STOP");
-        }
-        else{ // start timer
-            String cmd;
-            if (b.getId() == R.id.startExplore){
-                timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
-                cmd = "START/EXPLORE";
-                b.setText(R.string.stop_explore);
-                Cell curCell;
-                int xCoord, yCoord;
-                for (int i=0; i<arena.obstacles.size(); i++){
-                    curCell = arena.obstacles.get(i).cell;
-                    xCoord = curCell.col;
-                    yCoord = ArenaView.ROWS-1-curCell.row; // invert y coordinates since algorithm uses bottom left as origin
-                    btService.write(String.format(Locale.getDefault(),"CREATE/%02d/%02d/%02d", i, xCoord, yCoord));
-                    delay(200);
-                    btService.write(String.format(Locale.getDefault(),"FACE/%02d/%s", i, arena.obstacles.get(i).imageDir));
-                    delay(200);
+        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
+            Button b = (Button) view;
+            List<String> cmds = new ArrayList<>();
+            if (timerRunnable != null) { // timer was running, reset the timer and send stop command
+                if (b.getId() == R.id.startExplore) {
+                    b.setText(R.string.start_explore);
+                } else {
+                    b.setText(R.string.start_fastest_path);
                 }
-
-            } else {
-                timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewPath));
-                cmd = "START/PATH";
-                b.setText(R.string.stop_fastest_path);
+                timerHandler.removeCallbacks(timerRunnable);
+                timerRunnable = null;
+                toggleActivateButtons(true);
+                cmds.add("STOP");
+            } else { // start timer
+                if (b.getId() == R.id.startExplore) {
+                    timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
+                    b.setText(R.string.stop_explore);
+                    Cell curCell;
+                    int xCoord, yCoord;
+                    for (int i = 0; i < arena.obstacles.size(); i++) {
+                        curCell = arena.obstacles.get(i).cell;
+                        xCoord = curCell.col;
+                        yCoord = ArenaView.ROWS - 1 - curCell.row; // invert y coordinates since algorithm uses bottom left as origin
+                        cmds.add(String.format(Locale.getDefault(), "CREATE/%02d/%02d/%02d", i, xCoord, yCoord));
+                        cmds.add(String.format(Locale.getDefault(), "FACE/%02d/%s", i, arena.obstacles.get(i).imageDir));
+                    }
+                    cmds.add("START/EXPLORE");
+                } else {
+                    timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewPath));
+                    cmds.add("START/PATH");
+                    b.setText(R.string.stop_fastest_path);
+                }
+                timerRunnable.startTime = System.currentTimeMillis();
+                timerHandler.postDelayed(timerRunnable, 0);
+                delaySend(cmds, 200);
+                toggleActivateButtons(false);
             }
-            timerRunnable.startTime = System.currentTimeMillis();
-            timerHandler.postDelayed(timerRunnable, 0);
-            btService.write(cmd);
-            toggleActivateButtons(false);
+        } else {
+            // writing over bluetooth may create toasts, which will crash the app if run in another thread
+            Toast.makeText(this, "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
      * Delay message sending so the multiple messages are interpreted separately
+     * Sends in separate thread so it does not block UI
      * @param mils milliseconds to sleep for
      */
-    private void delay(long mils){
-        try {
-            TimeUnit.MILLISECONDS.sleep(mils);
-        } catch(Exception e){
-            System.out.println(e.getMessage());
-        }
-
+    private void delaySend(List<String> cmds, long mils){
+        new Thread(() -> {
+            for (String cmd: cmds){
+                btService.write(cmd);
+                try {
+                    TimeUnit.MILLISECONDS.sleep(mils);
+                } catch(Exception e){
+                    System.out.println(e.getMessage());
+                }
+            }
+        }).start();
     }
 
     private void toggleActivateButtons(boolean val){
         // deactivate obstacle and robot setting when robot is moving
-        appDataModel.setIsSetObstacles(false);
-        appDataModel.setIsSetRobot(false);
+        if (appDataModel.getIsSetObstacles().getValue()){
+            findViewById(R.id.setObstacles).callOnClick();
+        }
+        if (appDataModel.getIsSetRobot().getValue()){
+            findViewById(R.id.setRobot).callOnClick();
+        }
         findViewById(R.id.setObstacles).setEnabled(val);
-        ((Button)findViewById(R.id.setRobot)).setText(R.string.set_obstacles);
         findViewById(R.id.setRobot).setEnabled(val);
-        ((Button)findViewById(R.id.setRobot)).setText(R.string.set_robot);
         findViewById(R.id.clearObstacles).setEnabled(val);
         // disable tabs
         TabLayout tabLayout = findViewById(R.id.tabLayout);
@@ -407,7 +415,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity {
             tabStrip.getChildAt(i).setClickable(val);
         }
         if (RUN_TO_END) {
-            btService.allowWrite = val; // block all outward communication to robot
             findViewById(R.id.startExplore).setEnabled(val);
             findViewById(R.id.startPath).setEnabled(val);
         }
