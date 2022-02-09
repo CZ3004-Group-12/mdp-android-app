@@ -356,19 +356,26 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 timerHandler.removeCallbacks(timerRunnable);
                 timerRunnable = null;
                 toggleActivateButtons(true);
-                cmds.add("STOP");
+                btService.write("STOP");
             } else { // start timer
+                cmds.add("RESET");
                 if (b.getId() == R.id.startExplore) {
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
                     b.setText(R.string.stop_explore);
                     Cell curCell;
                     int xCoord, yCoord;
+                    String dir = "0";
                     for (int i = 0; i < arena.obstacles.size(); i++) {
+                        switch(arena.obstacles.get(i).imageDir){
+                            case("TOP"): dir = "0"; break;
+                            case("LEFT"): dir = "90"; break;
+                            case("RIGHT"): dir = "-90"; break;
+                            case("BOTTOM"): dir = "180"; break;
+                        }
                         curCell = arena.obstacles.get(i).cell;
                         xCoord = curCell.col;
                         yCoord = ArenaView.ROWS - 1 - curCell.row; // invert y coordinates since algorithm uses bottom left as origin
-                        cmds.add(String.format(Locale.getDefault(), "CREATE/%02d/%02d/%02d", i, xCoord, yCoord));
-                        cmds.add(String.format(Locale.getDefault(), "FACE/%02d/%s", i, arena.obstacles.get(i).imageDir));
+                        cmds.add(String.format(Locale.getDefault(), "CREATE/%02d/%02d/%02d/%s", i, xCoord, yCoord, dir));
                     }
                     cmds.add("START/EXPLORE");
                 } else {
