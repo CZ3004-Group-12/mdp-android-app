@@ -31,36 +31,21 @@ import java.util.concurrent.TimeUnit;
 
 public class ArenaView extends View {
     //Zoom & Scroll
-    //These two constants specify the minimum and maximum zoom
     private static float MIN_ZOOM = 1f;
     private static float MAX_ZOOM = 5f;
-
     private float scaleFactor = 1.f;
     private ScaleGestureDetector detector;
     private Rect clipBoundsCanvas;
-
-    //These constants specify the mode that we&#039;re in
     private static int NONE = 0;
     private static int DRAG = 1;
     private static int ZOOM = 2;
-
     private int mode;
-
-    //These two variables keep track of the X and Y coordinate of the finger when it first
-    //touches the screen
     private float startX = 0f;
     private float startY = 0f;
-
-    //These two variables keep track of the amount we need to translate the canvas along the X
-    //and the Y coordinate
     private float translateX = 0f;
     private float translateY = 0f;
-
-    //These two variables keep track of the amount we translated the X and Y coordinates, the last time we
-    //panned.
     private float previousTranslateX = 0f;
     private float previousTranslateY = 0f;
-
     private boolean dragged;
 
 
@@ -143,33 +128,20 @@ public class ArenaView extends View {
         hMargin = (width-(COLS+1)*cellSize)/2;
         vMargin = (height-(ROWS+1)*cellSize)/2;
         canvas.translate(hMargin,vMargin);
-        //We&#039;re going to scale the X and Y coordinates by the same amount
         canvas.scale(scaleFactor, scaleFactor);
 
-        //If translateX times -1 is lesser than zero, let&#039;s set it to zero. This takes care of the left bound
         if((translateX * -1) < 0) {
             translateX = 0;
         }
-
-        //This is where we take care of the right bound. We compare translateX times -1 to (scaleFactor - 1) * displayWidth.
-        //If translateX is greater than that value, then we know that we&#039;ve gone over the bound. So we set the value of
-        //translateX to (1 - scaleFactor) times the display width. Notice that the terms are interchanged; it&#039;s the same
-        //as doing -1 * (scaleFactor - 1) * displayWidth
         else if((translateX * -1) > (scaleFactor - 1) * width) {
             translateX = (1 - scaleFactor) * width;
         }
-
         if(translateY * -1 < 0) {
             translateY = 0;
         }
-
-        //We do the exact same thing for the bottom bound, except in this case we use the height of the display
         else if((translateY * -1) > (scaleFactor - 1) * height) {
             translateY = (1 - scaleFactor) * height;
         }
-
-        //We need to divide by the scale factor here, otherwise we end up with excessive panning based on our zoom level
-        //because the translation amount also gets scaled according to how much we&#039;ve zoomed into the canvas.
         canvas.translate(translateX / scaleFactor, translateY / scaleFactor);
 
         //draw grid numbers
@@ -181,31 +153,12 @@ public class ArenaView extends View {
         for (int x = 1; x < COLS+1; x++){ // col 0 is for grid number
             for (int y = 0; y < ROWS; y++){ // row ROWS is for grid number
 
-                // Paint walls
-                if(cells[x-1][y].topWall){
-                    canvas.drawLine( x* cellSize, y *cellSize, (x+1)* cellSize,y*cellSize, wallPaint);
-                }
-                if(cells[x-1][y].bottomWall){
-                    canvas.drawLine( x* cellSize, (y+1) *cellSize, (x+1)* cellSize,(y+1)*cellSize, wallPaint);
-                }
-                if(cells[x-1][y].leftWall){
-                    canvas.drawLine( x* cellSize, y *cellSize, x* cellSize,(y+1)*cellSize, wallPaint);
-                }
-                if(cells[x-1][y].rightWall){
-                    canvas.drawLine( (x+1)* cellSize, y *cellSize, (x+1)* cellSize,(y+1)*cellSize, wallPaint);
-                }
-
                 // Paint normal cell
                 RectF cellRect = gridMap.get(cells[x-1][y]);
                 if(cellRect != null) {
                     cellRect.set((x + 0.1f) * cellSize, (y + 0.1f) * cellSize, (x + 1f) * cellSize, (y + 1f) * cellSize);
-
                     int cellRadius = 10;
-                    canvas.drawRoundRect(cellRect, // rect
-                            cellRadius, // rx
-                            cellRadius, // ry
-                            gridPaint // Paint
-                    );
+                    canvas.drawRoundRect(cellRect, cellRadius, cellRadius, gridPaint);
                 }
             }
 
@@ -284,7 +237,6 @@ public class ArenaView extends View {
                                     for(Obstacle obstacle: obstacles){
                                         if(obstacle.cell == curCell){
                                             editingObs = obstacle;
-                                            System.out.println("Obstacles Coordinates: (" + editingObs.cell.col + "," + editingObs.cell.row + ")");
                                         }
                                     }
                                     obstacleSelected = true;
@@ -306,15 +258,12 @@ public class ArenaView extends View {
                         }
                     }
                     else{
-                        //obstacleEdit(event,curCell);
-                        System.out.println("hello");
                         obstacleEdit = false;
                     }
                 } else if(obstacleSelected && editingObs != null && isSetObstacles){
                     //Obstacle delete
                     if(event.getAction() ==MotionEvent.ACTION_MOVE){
                         if(x < gridMap.get(maxLeft).centerX() || x > gridMap.get(maxRight).centerX()){
-                            System.out.println("usdhdfdf");
                             if(editingObs != null){
                                 obstacles.remove(editingObs);
                                 obstacleSelected = false;
@@ -350,9 +299,6 @@ public class ArenaView extends View {
 
                     case MotionEvent.ACTION_DOWN:
                         mode = DRAG;
-                        //We assign the current X and Y coordinate of the finger to startX and startY minus the previously translated
-                        //amount for each coordinates This works even when we are translating the first time because the initial
-                        //values for these two variables is zero.
                         startX = x - previousTranslateX;
                         startY = y - previousTranslateY;
                         break;
@@ -360,8 +306,6 @@ public class ArenaView extends View {
                     case MotionEvent.ACTION_MOVE:
                         translateX = x - startX;
                         translateY = y - startY;
-                        //We cannot use startX and startY directly because we have adjusted their values using the previous translation values.
-                        //This is why we need to add those values to startX and startY so that we can get the actual coordinates of the finger.
                         double distance = Math.sqrt(Math.pow(x - (startX + previousTranslateX), 2) +
                                 Math.pow(y - (startY + previousTranslateY), 2)
                         );
@@ -378,28 +322,19 @@ public class ArenaView extends View {
                     case MotionEvent.ACTION_UP:
                         mode = NONE;
                         dragged = false;
-                        //All fingers went up, so let&#039;s save the value of translateX and translateY into previousTranslateX and
-                        //previousTranslate
                         previousTranslateX = translateX;
                         previousTranslateY = translateY;
                         setObstacleEdit(event,curCell,curRect);
-
-
                         break;
 
                     case MotionEvent.ACTION_POINTER_UP:
                         mode = DRAG;
-                        //This is not strictly necessary; we save the value of translateX and translateY into previousTranslateX
-                        //and previousTranslateY when the second finger goes up
                         previousTranslateX = translateX;
                         previousTranslateY = translateY;
                         break;
                 }
             }
-
-
         }
-
         detector.onTouchEvent(event);
 
         if ((mode == DRAG && scaleFactor != 1f && dragged) || mode == ZOOM) {
@@ -491,11 +426,7 @@ public class ArenaView extends View {
                 break;
         }
         int cellRadius = 1000;
-        canvas.drawRoundRect(cellRect, // rect
-                cellRadius, // rx
-                cellRadius, // ry
-                obstacleHeadPaint // Paint
-        );
+        canvas.drawRoundRect(cellRect, cellRadius, cellRadius, obstacleHeadPaint);
     }
 
 
@@ -512,7 +443,7 @@ public class ArenaView extends View {
         if(yCenter<1 || yCenter>=ROWS-1 || xCenter>=COLS-1 || xCenter<1){
             System.out.println("Out of bound : Robot need six cells");
         }else{
-            Robot.setRobot(xCenter, yCenter, dir);
+            Robot.setRobot(xCenter, yCenter, dir,obstacles);
             invalidate();
         }
     }
@@ -530,6 +461,8 @@ public class ArenaView extends View {
         obstacles.clear();
         invalidate();
     }
+
+    //To listen arena view data changes on Main activity.
     public interface DataEventListener {
         public void onEventOccurred();
     }

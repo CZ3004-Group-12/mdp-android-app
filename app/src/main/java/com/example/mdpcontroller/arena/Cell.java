@@ -1,12 +1,6 @@
 package com.example.mdpcontroller.arena;
 
 public class Cell {
-    boolean
-            topWall = true,
-            leftWall = true,
-            bottomWall = true,
-            rightWall = true,
-            visited = false;
     String type = "";
     public int col, row;
     public Cell (int col, int row){

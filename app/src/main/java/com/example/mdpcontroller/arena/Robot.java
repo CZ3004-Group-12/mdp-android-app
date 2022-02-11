@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,9 +26,12 @@ public class Robot {
         robotMatrix = new Cell[3][3];
         allCells = cells;
     }
-    public static void setRobot(int xCenter, int yCenter,  String dir){
-        setRobotPosition(xCenter, yCenter);
-        setRobotDirection(dir);
+    public static void setRobot(int xCenter, int yCenter,  String dir, ArrayList<Obstacle> obstacles){
+        boolean newPos = checkObs(xCenter,yCenter,obstacles);
+        if(!newPos){
+            setRobotPosition(xCenter, yCenter);
+            setRobotDirection(dir);
+        }
     }
     /**
      * Does NOT validate if position is valid, Robot should not know about the state of the grid
@@ -35,9 +39,10 @@ public class Robot {
      * @param xCenter x Coordinate of new centre of robot
      * @param yCenter y Coordinate of new centre of robot
      */
-    private static void setRobotPosition(int xCenter, int yCenter){
+        private static void setRobotPosition(int xCenter, int yCenter){
         int yTopLeft=yCenter-1, xTopLeft= xCenter-1;
         Cell curCell;
+
         // wipe old robot position
         if (robotMatrix[0][0] != null){ // skip on initial robot set
             for (int i=0; i<robotMatrix[0].length; i++){ // iterate through rows: i = x coordinate
@@ -87,5 +92,26 @@ public class Robot {
             }
         }
     }
+
+    /**
+     * Check whether at least one of the new robot cells is obstacle
+     * @param xCenter x Coordinate of new centre of robot
+     * @param yCenter y Coordinate of new centre of robot
+     * @param obstacles list of plotted obstacles
+     */
+    private static boolean checkObs(int xCenter,int yCenter,ArrayList<Obstacle> obstacles){
+        int yTopLeft=yCenter-1, xTopLeft= xCenter-1;
+        for (int i=0; i<robotMatrix[0].length; i++){ // iterate through rows: i = x coordinate
+            for (int j=0; j<robotMatrix.length; j++){ // iterate through cols: j = y coordinate
+                for(Obstacle obs: obstacles ){
+                    if((obs.cell.col == xTopLeft+i) &&(obs.cell.row == yTopLeft+j)){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
 }
