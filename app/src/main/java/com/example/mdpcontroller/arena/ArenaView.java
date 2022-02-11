@@ -138,7 +138,7 @@ public class ArenaView extends View {
         else
             cellSize = height/(ROWS+2);
         obstacleImageIDPaint.setTextSize(cellSize/2);
-        obstacleNumPaint.setTextSize(cellSize/4);
+        obstacleNumPaint.setTextSize(cellSize/3);
         gridNumberPaint.setTextSize(cellSize/2);
         hMargin = (width-(COLS+1)*cellSize)/2;
         vMargin = (height-(ROWS+1)*cellSize)/2;
