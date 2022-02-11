@@ -110,7 +110,7 @@ public class ArenaView extends View {
         obstacleHeadPaint = new Paint();
         obstacleHeadPaint.setColor(getResources().getColor(R.color.red_500));
         exploredObstaclePaint = new Paint();
-        exploredObstaclePaint.setColor(getResources().getColor(R.color.purple_500));
+        exploredObstaclePaint.setColor(getResources().getColor(R.color.purple_200));
         gridNumberPaint = new Paint();
         gridNumberPaint.setColor(getResources().getColor(R.color.white));
     }
