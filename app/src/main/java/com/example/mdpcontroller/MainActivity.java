@@ -131,9 +131,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     private final BroadcastReceiver msgReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String message =  intent.getExtras().getString("message");
-            //Categorize received messages
-            String[] messageArr = message.split(DELIMITER);
             try{
+                //Categorize received messages
+                String[] messageArr = message.split("\\|");
+                messageArr = messageArr[1].split(DELIMITER);
                 switch(messageArr[0]){
                     // Format: ROBOT/<x>/<y>/<dir>
                     case("ROBOT"): {
@@ -180,7 +181,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 // message incorrect message parameters
                 displayMessage("ERROR (Incorrect message format)\n" + message);
             }
-
         }
     };
 
