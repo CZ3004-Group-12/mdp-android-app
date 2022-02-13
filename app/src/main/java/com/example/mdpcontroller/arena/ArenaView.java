@@ -447,6 +447,11 @@ public class ArenaView extends View {
             invalidate();
         }
     }
+    public String moveRobot(String dir,String movement){
+        Robot.moveRobot(dir,movement,obstacles);
+        invalidate();
+        return Robot.robotDir;
+    }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
@@ -461,6 +466,7 @@ public class ArenaView extends View {
         obstacles.clear();
         invalidate();
     }
+
 
     //To listen arena view data changes on Main activity.
     public interface DataEventListener {

@@ -69,6 +69,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     ViewPager tabViewPager;
     MainAdapter adapter;
 
+    public String robotDir;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         BluetoothService.initialize(this);
@@ -117,6 +118,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 }
             }
         });
+        robotDir = "N";
         //registerReceiver(sendMsgReceiver, new IntentFilter("send_msg"));
     }
 
@@ -309,7 +311,14 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
             }
             default: return;
         }
-        btService.write(String.format("MOVE/%s", dir));
+        if(Robot.robotMatrix[0][0] == null){
+            System.out.println("Robot is not set up on map");
+        }else{
+            btService.write(String.format("MOVE/%s", dir));
+            if(robotDir != null){ //just to catch error
+                robotDir = arena.moveRobot(robotDir,dir);
+            }
+        }
     }
 
     public void clearObstacles(View view){
