@@ -1,11 +1,6 @@
 package com.example.mdpcontroller.arena;
 
-import android.graphics.Canvas;
-import android.graphics.RectF;
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * I look like this
@@ -16,7 +11,7 @@ import java.util.Map;
  */
 public class Robot {
     public static Cell[][] robotMatrix;
-    private static Cell[][] allCells;
+    private static Cell[][] grid;
     //  Looks like this:
     //  [B, H, B]
     //  [B, B, B]
@@ -24,7 +19,8 @@ public class Robot {
 
     public static void initializeRobot(Cell[][] cells){
         robotMatrix = new Cell[3][3];
-        allCells = cells;
+        robotMatrix[1][1] = null;
+        grid = cells;
     }
     public static void setRobot(int xCenter, int yCenter,  String dir, ArrayList<Obstacle> obstacles){
         boolean newPos = checkObs(xCenter,yCenter,obstacles);
@@ -55,7 +51,7 @@ public class Robot {
         // set new robot position
         for (int i=0; i<robotMatrix[0].length; i++){ // iterate through rows: i = x coordinate
             for (int j=0; j<robotMatrix.length; j++){ // iterate through cols: j = y coordinate
-                curCell = allCells[xTopLeft+i][yTopLeft+j];
+                curCell = grid[xTopLeft+i][yTopLeft+j];
                 curCell.type = "robot";
                 robotMatrix[i][j] = curCell;
             }

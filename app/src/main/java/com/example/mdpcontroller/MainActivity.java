@@ -371,6 +371,16 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     int xCoord, yCoord;
                     String dir = "0";
                     StringBuilder cmd = new StringBuilder("START/EXPLORE");
+
+                    // Robot position
+                    if (Robot.robotMatrix[1][1] != null) {
+                        Cell center = Robot.robotMatrix[1][1];
+                        cmd.append(String.format(Locale.getDefault(),"/(R,%02d, %02d, 0)", center.col, center.row));
+
+                    }
+                    else cmd.append("/(R,01,01,0)");
+
+                    // Obstacle position
                     for (int i = 0; i < arena.obstacles.size(); i++) {
                         switch(arena.obstacles.get(i).imageDir){
                             case("TOP"): dir = "0"; break;
