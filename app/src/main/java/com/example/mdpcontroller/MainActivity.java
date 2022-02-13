@@ -375,7 +375,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     // Robot position
                     if (Robot.robotMatrix[1][1] != null) {
                         Cell center = Robot.robotMatrix[1][1];
-                        cmd.append(String.format(Locale.getDefault(),"/(R,%02d, %02d, 0)", center.col, center.row));
+                        cmd.append(String.format(Locale.getDefault(),"/(R,%02d,%02d,0)", center.col, center.row));
 
                     }
                     else cmd.append("/(R,01,01,0)");
