@@ -40,7 +40,10 @@ import com.example.mdpcontroller.tab.PathTabFragment;
 import com.example.mdpcontroller.tab.SettingsTabFragment;
 import com.google.android.material.tabs.TabLayout;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +60,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
 
     private AppDataModel appDataModel;
     private ArenaView arena;
-    private PathTabFragment pathFrag;
-    private ExploreTabFragment exploreTabFragment;
-    private PathTabFragment pathTabFragment;
-
+    private List<String> moveList;
     // for timer
     private final Handler timerHandler  = new Handler();
     TimerRunnable timerRunnable = null;
@@ -113,13 +113,14 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
         arena.setEventListener(new ArenaView.DataEventListener() {
             @Override
             public void onEventOccurred() {
-                if(arena.obstacleEdit == true){
+                if(arena.obstacleEdit){
                     showObstacleDialog();
                 }
             }
         });
         robotDir = "N";
-        //registerReceiver(sendMsgReceiver, new IntentFilter("send_msg"));
+
+        moveList = new ArrayList<>();
     }
 
     //BlueTooth
@@ -135,21 +136,31 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
             String message =  intent.getExtras().getString("message");
             try{
                 //Categorize received messages
-                String[] messageArr = message.split("\\|");
-                messageArr = messageArr[1].split(DELIMITER);
+                String[] messageArr = message.split("\\|"); // remove header
+                if (messageArr.length > 1) messageArr = messageArr[1].split(DELIMITER);
+                else messageArr = messageArr[0].split(DELIMITER);
                 switch(messageArr[0]){
-                    // Format: ROBOT/<x>/<y>/<dir>
+                    // Format: ROBOT/<dims>/<posList>
                     case("ROBOT"): {
-                        int xCoord = Integer.parseInt(messageArr[1]);
-                        int yCoord = ArenaView.ROWS-1-Integer.parseInt(messageArr[2]);
+                        if (messageArr.length < 3) break;
+                        moveList.addAll(Arrays.asList(messageArr).subList(2, messageArr.length));
+                        displayMessage("Status update\n" + "Movement Started");
+                        break;
+                    }
+                    case("DONE"): {
+                        if (moveList.size() == 0) break;
+                        String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
+                        int xCoord = (int)Double.parseDouble(args[0].trim());
+                        int yCoord = ArenaView.ROWS-1-(int)Double.parseDouble(args[1].trim());
                         String dir = "N";
-                        switch(messageArr[3]){
+                        switch(args[2].trim()){
                             case("0"): dir="N";break;
                             case("90"): dir="W";break;
                             case("-90"): dir="E";break;
                             case("180"): dir="S";break;
                         }
                         arena.setRobot(xCoord, yCoord, dir);
+                        moveList.remove(0);
                         break;
                     }
                     // Format: TARGET/<num>/<id>
@@ -170,8 +181,12 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     case("FINISH"):{
                         if (messageArr[1].equals("EXPLORE")){
                             startStopTimer(findViewById(R.id.startExplore));
+                            String timeTaken = ((TextView)findViewById(R.id.timerTextViewExplore)).getText().toString();
+                            displayMessage("Status update\n" + "Exploration complete!\nTime taken: " + timeTaken);
                         } else {
                             startStopTimer(findViewById(R.id.startPath));
+                            String timeTaken = ((TextView)findViewById(R.id.timerTextViewExplore)).getText().toString();
+                            displayMessage("Status update\n" + "Fastest path complete!\nTime taken: " + timeTaken);
                         }
                         break;
                     }
@@ -384,8 +399,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     // Robot position
                     if (Robot.robotMatrix[1][1] != null) {
                         Cell center = Robot.robotMatrix[1][1];
-                        cmd.append(String.format(Locale.getDefault(),"/(R,%02d,%02d,0)", center.col, center.row));
-
+                        cmd.append(String.format(Locale.getDefault(),"/(R,%02d,%02d,0)", center.col, ArenaView.ROWS-1-center.row));
                     }
                     else cmd.append("/(R,01,01,0)");
 

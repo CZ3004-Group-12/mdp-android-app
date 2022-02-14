@@ -43,6 +43,8 @@ public class ExploreTabFragment extends Fragment {
         setRobotBtn = view.findViewById(R.id.setRobot);
         setObstaclesBtn = view.findViewById(R.id.setObstacles);
         appDataModel = new ViewModelProvider(requireActivity()).get(AppDataModel.class);
+        appDataModel.setIsSetObstacles(isSetObstacles);
+        appDataModel.setIsSetRobot(isSetRobot);
 
         setRobotBtn.setOnClickListener(item ->{
             if(isSetObstacles){
