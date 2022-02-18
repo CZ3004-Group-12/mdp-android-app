@@ -116,13 +116,20 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
         robotDir = "N";
 
         moveList = new ArrayList<>();
+        setConnectBtn();
     }
 
     //BlueTooth
     public void btConnect_onPress(View view) {
-        Intent intent = new Intent(this, DeviceList.class);
-        btService.serverStartListen(this);
-        startActivity(intent);
+        // connect as server
+        if (!BluetoothService.CONNECT_AS_CLIENT && !(BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED)) {
+            btService.serverStartListen(this);
+        }
+        // connect as client
+        else{
+            Intent intent = new Intent(this, DeviceList.class);
+            startActivity(intent);
+        }
     }
 
     // Create a BroadcastReceiver for message_received.
@@ -225,32 +232,44 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 btService.clientConnect(intent.getStringExtra("address"),
                         intent.getStringExtra("name"),
                         main);
-                bt.setText(getResources().getString(R.string.button_bluetooth_connecting));
-                bt.setBackgroundColor(getResources().getColor(R.color.teal_200));
-
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
                 btService.startConnectedThread();
                 btService.serverStopListen();
-                String devName = intent.getStringExtra("device");
-                bt.setText(String.format(getResources().getString(R.string.button_bluetooth_connected), devName));
-                bt.setBackgroundColor(getResources().getColor(R.color.green_500));
                 displayMessage("Status update\nConnected");
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED) {
                 btService.disconnect();
                 btService.serverStartListen(main);
-                bt.setText(R.string.button_bluetooth_unconnected);
-                bt.setBackgroundColor(getResources().getColor(R.color.purple_200));
             }
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
-                bt.setText(getResources().getString(R.string.button_bluetooth_disconnected));
-                bt.setBackgroundColor(getResources().getColor(R.color.orange_500));
                 if (BluetoothService.CONNECT_AS_CLIENT) displayMessage("Status update\nDisconnected, attempting to reconnect...");
                 else displayMessage("Status update\nDisconnected, waiting for reconnect...");
             }
+            setConnectBtn();
         }
     };
+
+    public void setConnectBtn(){
+        Button bt = findViewById(R.id.button_connect);
+        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTING) {
+            bt.setText(getResources().getString(R.string.button_bluetooth_connecting));
+            bt.setBackgroundColor(getResources().getColor(R.color.teal_200));
+        }
+        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
+            String name = BluetoothService.mConnectedDevice.getName()!=null?BluetoothService.mConnectedDevice.getName(): BluetoothService.mConnectedDevice.getAddress();
+            bt.setText(String.format(getResources().getString(R.string.button_bluetooth_connected), name));
+            bt.setBackgroundColor(getResources().getColor(R.color.green_500));
+        }
+        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.UNCONNECTED) {
+            bt.setText(R.string.button_bluetooth_unconnected);
+            bt.setBackgroundColor(getResources().getColor(R.color.purple_200));
+        }
+        else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
+            bt.setText(getResources().getString(R.string.button_bluetooth_disconnected));
+            bt.setBackgroundColor(getResources().getColor(R.color.orange_500));
+        }
+    }
 
     @Override
     protected void onDestroy() {
@@ -342,6 +361,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
 
     public void toggleReconnectAsClient(View view){
         BluetoothService.CONNECT_AS_CLIENT = !BluetoothService.CONNECT_AS_CLIENT;
+        if (!BluetoothService.CONNECT_AS_CLIENT) btService.serverStartListen(this);
         ((CheckedTextView)findViewById(R.id.toggleReconnectAsClient)).setChecked(BluetoothService.CONNECT_AS_CLIENT);
     }
 

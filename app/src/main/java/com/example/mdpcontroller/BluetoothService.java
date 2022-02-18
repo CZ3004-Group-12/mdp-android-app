@@ -45,7 +45,7 @@ public class BluetoothService {
     private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
     private static final int MAX_RECONNECT_RETRIES = 5;
     private static final String NAME = "MDP_Group_12_Tablet";
-    public ConnectedThread mConnectedThread;
+    public static ConnectedThread mConnectedThread;
     public AcceptThread mAcceptThread;
     public ConnectAsClientThread mClientThread;
     public Activity mContext;
@@ -68,7 +68,7 @@ public class BluetoothService {
     }
 
     public static void initialize(Activity activity){
-        setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<String, String>(), activity);
+        if (btStatus == null) setBtStatus(BluetoothStatus.UNCONNECTED, new HashMap<String, String>(), activity);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // Request permissions
