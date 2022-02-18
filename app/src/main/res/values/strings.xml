@@ -21,6 +21,6 @@
     <string name="done">Done</string>
     <string name="set_btn_txt">Set %1$s</string>
     <string name="debug_mode">Debug Mode</string>
-    <string name="reconnect_as_client">Auto Reconnect As Client</string>
+    <string name="reconnect_as_client">Connect As Client</string>
     <string name="prevent_input_on_movement">Prevent Input On Movement</string>
 </resources>

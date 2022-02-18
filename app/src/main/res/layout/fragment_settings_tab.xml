@@ -31,7 +31,7 @@
         android:layout_height="0dp"
         android:background="#000000"
         android:checkMark="?android:attr/listChoiceIndicatorMultiple"
-        android:checked="false"
+        android:checked="true"
         android:clickable="true"
         android:gravity="center_vertical"
         android:onClick="toggleReconnectAsClient"

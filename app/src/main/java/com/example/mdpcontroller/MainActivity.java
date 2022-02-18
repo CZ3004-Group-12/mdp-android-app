@@ -3,7 +3,6 @@ package com.example.mdpcontroller;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -30,7 +29,6 @@ import android.widget.Toast;
 
 import com.example.mdpcontroller.arena.ArenaView;
 import com.example.mdpcontroller.arena.Cell;
-import com.example.mdpcontroller.arena.Obstacle;
 import com.example.mdpcontroller.arena.ObstacleDialogueFragment;
 import com.example.mdpcontroller.arena.Robot;
 import com.example.mdpcontroller.tab.AppDataModel;
@@ -40,15 +38,12 @@ import com.example.mdpcontroller.tab.PathTabFragment;
 import com.example.mdpcontroller.tab.SettingsTabFragment;
 import com.google.android.material.tabs.TabLayout;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity<ActivityResultLauncher> extends AppCompatActivity implements ObstacleDialogueFragment.DialogDataListener {
     private final String DELIMITER = "/";
@@ -251,7 +246,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
             else if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.DISCONNECTED) {
                 bt.setText(getResources().getString(R.string.button_bluetooth_disconnected));
                 bt.setBackgroundColor(getResources().getColor(R.color.orange_500));
-                if (BluetoothService.RECONNECT_AS_CLIENT) displayMessage("Status update\nDisconnected, attempting to reconnect...");
+                if (BluetoothService.CONNECT_AS_CLIENT) displayMessage("Status update\nDisconnected, attempting to reconnect...");
                 else displayMessage("Status update\nDisconnected, waiting for reconnect...");
             }
         }
@@ -346,8 +341,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     }
 
     public void toggleReconnectAsClient(View view){
-        BluetoothService.RECONNECT_AS_CLIENT = !BluetoothService.RECONNECT_AS_CLIENT;
-        ((CheckedTextView)findViewById(R.id.toggleReconnectAsClient)).setChecked(BluetoothService.RECONNECT_AS_CLIENT);
+        BluetoothService.CONNECT_AS_CLIENT = !BluetoothService.CONNECT_AS_CLIENT;
+        ((CheckedTextView)findViewById(R.id.toggleReconnectAsClient)).setChecked(BluetoothService.CONNECT_AS_CLIENT);
     }
 
     public void toggleRunToEnd(View view){

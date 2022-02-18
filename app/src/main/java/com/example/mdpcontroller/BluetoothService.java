@@ -25,13 +25,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class BluetoothService {
     public static BluetoothAdapter mBluetoothAdapter;
     public static BluetoothSocket mBluetoothSocket;
     public static BluetoothDevice mConnectedDevice;
-    public static boolean RECONNECT_AS_CLIENT = true;
+    public static boolean CONNECT_AS_CLIENT = true; // if false, will make device discoverable and accept connections
     public enum BluetoothStatus {
         UNCONNECTED, SCANNING, CONNECTING, CONNECTED, DISCONNECTED
     }
@@ -153,6 +152,7 @@ public class BluetoothService {
     }
 
     public void serverStartListen(Activity context) {
+        if (CONNECT_AS_CLIENT) return;
         if(mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE)
         {
             // make device discoverable
@@ -387,7 +387,7 @@ public class BluetoothService {
         public void onReceive(Context context, Intent intent) {
             if (getBtStatus() == BluetoothStatus.DISCONNECTED) {
                 Intent intent2 = new Intent("message_received");
-                if (RECONNECT_AS_CLIENT){
+                if (CONNECT_AS_CLIENT){
                     intent2.putExtra("message", "DEBUG/Connection lost, attempting to reconnect...");
                     context.sendBroadcast(intent2);
                     if(getBtStatus() == BluetoothStatus.DISCONNECTED && mConnectedDevice != null) {
