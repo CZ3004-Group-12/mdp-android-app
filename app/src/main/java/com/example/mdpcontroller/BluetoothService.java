@@ -273,9 +273,8 @@ public class BluetoothService {
                     mConnectedDevice = socket.getRemoteDevice();
                     String name = socket.getRemoteDevice().getName();
                     String address = socket.getRemoteDevice().getAddress();
-                    if (name.equals("null")) continue;
                     Map<String, String> extra = new HashMap<>();
-                    extra.put("device", name);
+                    extra.put("device", !name.equals("null") ? name : address);
                     Intent intent = new Intent("message_received");
                     intent.putExtra("message", "DEBUG/Connected!");
                     context.sendBroadcast(intent);

@@ -75,8 +75,8 @@ public class DeviceList extends AppCompatActivity {
                 // device found
                 // get BluetoothDevice from the intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (device.getName() == null) return;
                 name = device.getName() + "\n" + device.getAddress();
-                System.out.println(name);
                 if (!deviceList.contains(name)){
                     deviceList.add(name);
                     deviceListAdapter.notifyItemInserted(deviceList.size());
