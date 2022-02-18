@@ -31,7 +31,7 @@ public class BluetoothService {
     public static BluetoothAdapter mBluetoothAdapter;
     public static BluetoothSocket mBluetoothSocket;
     public static BluetoothDevice mConnectedDevice;
-    public static boolean RECONNECT_AS_CLIENT = false;
+    public static boolean RECONNECT_AS_CLIENT = true;
     public enum BluetoothStatus {
         UNCONNECTED, SCANNING, CONNECTING, CONNECTED, DISCONNECTED
     }
@@ -157,7 +157,7 @@ public class BluetoothService {
         {
             // make device discoverable
             Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
             context.startActivityForResult(discoverableIntent, 1);
         }
         if (mAcceptThread == null){
@@ -273,8 +273,9 @@ public class BluetoothService {
                     mConnectedDevice = socket.getRemoteDevice();
                     String name = socket.getRemoteDevice().getName();
                     String address = socket.getRemoteDevice().getAddress();
+                    if (name.equals("null")) continue;
                     Map<String, String> extra = new HashMap<>();
-                    extra.put("device", !name.equals("null") ? name : address);
+                    extra.put("device", name);
                     Intent intent = new Intent("message_received");
                     intent.putExtra("message", "DEBUG/Connected!");
                     context.sendBroadcast(intent);
