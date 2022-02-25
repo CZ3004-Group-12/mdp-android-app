@@ -203,7 +203,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         displayMessage("ERROR (Unrecognized command)\n" + messageArr[0]);
                     }
                 }
-            } catch(IndexOutOfBoundsException e){
+            } catch(Exception e){
                 // message incorrect message parameters
                 displayMessage("ERROR (Incorrect message format)\n" + message);
             }
