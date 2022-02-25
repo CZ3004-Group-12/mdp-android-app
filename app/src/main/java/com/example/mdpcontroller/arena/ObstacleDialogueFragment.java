@@ -70,12 +70,17 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
 
         cancelBtn = view.findViewById(R.id.cancelBtn);
         submitBtn = view.findViewById(R.id.submitBtn);
+
         xPos = view.findViewById(R.id.xPos);
         obstacleView.x = getArguments().getInt("OBSX");
-        xPos.setText(obstacleView.x.toString());
+//        xPos.setText(obstacleView.x.toString());
         yPos = view.findViewById(R.id.yPos);
         obstacleView.y = getArguments().getInt("OBSY");
-        yPos.setText(obstacleView.y.toString());
+        Integer convertedY = obstacleView.y;
+        Integer convertedX = 19 - obstacleView.x;
+//        yPos.setText(obstacleView.y.toString());
+        xPos.setText(convertedX.toString());
+        yPos.setText(convertedY.toString());
 
         imageDir = view.findViewById(R.id.imageDirSpinner);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_spinner_dropdown_item, Directions);

@@ -167,7 +167,14 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     }
                     // Format: TARGET/<num>/<id>
                     case("TARGET") :{
-                        arena.setObstacleImageID(messageArr[1], messageArr[2]);
+                        try{
+                            arena.setObstacleImageID(messageArr[1], messageArr[2]);
+                        } catch (Exception e) {
+                            if (DEBUG){
+                                displayMessage("DEBUG\nInvalid message: " +message);
+                            }
+                            System.out.println("Invalid imageID or obstacleID: "+message);
+                        }
                         break;
                     }
                     // Format: STATUS/<msg>
@@ -474,7 +481,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
         int obsIndex = arena.obstacles.indexOf(arena.editingObs);
         int obsX = arena.editingObs.getCell().getRow();
         int obsY = arena.editingObs.getCell().getCol();
-        System.out.println(obsX+ "hello TESTING" + obsY);
         String imageDir=arena.editingObs.getImageDir();;
         String imageID;
         if(arena.editingObs.explored == false){
@@ -495,7 +501,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
         for (Map.Entry<Cell, RectF> entry : arena.gridMap.entrySet()) {
             curCell = entry.getKey();
             curRect = entry.getValue();
-            if(arena.obstacles.get(obsIndex).getCell() == curCell){
+
+            if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() == "obstacle" ){
                 curCell.setType("");
             }
             if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() == ""){
