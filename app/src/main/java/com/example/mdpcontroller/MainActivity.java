@@ -59,7 +59,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     // for timer
     private final Handler timerHandler  = new Handler();
     TimerRunnable timerRunnable = null;
-    private int curObsNum = 0;
+    private String curObsNum = "0";
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
@@ -139,7 +139,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
             String fullMessage =  intent.getExtras().getString("message");
             if (fullMessage.length() ==0) return;
             //Categorize received messages
-            fullMessage = fullMessage.substring(1);
+            if (fullMessage.charAt(0) == '&') fullMessage = fullMessage.substring(1);
             String[] commandArr = fullMessage.split("&");
             for (String message: commandArr) {
                 try {
@@ -151,7 +151,9 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         case ("ROBOT"): {
                             if (messageArr.length < 3) break;
                             TextView obstacleStatus = findViewById(R.id.obstacleStatusTextView);
-                            curObsNum++;
+                            int xCoord = Integer.parseInt(messageArr[1].split("-")[0]);
+                            int yCoord = ArenaView.ROWS - 1 - Integer.parseInt(messageArr[1].split("-")[1]);
+                            curObsNum = arena.findObstacle(xCoord, yCoord);
                             obstacleStatus.setText("Searching for obstacle " + curObsNum);
                             moveList.clear();
                             moveList.addAll(Arrays.asList(messageArr).subList(2, messageArr.length));
@@ -191,7 +193,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         // Format: TARGET/<num>/<id>
                         case ("TARGET"): {
                             try {
-                                arena.setObstacleImageID(messageArr[1], messageArr[2]);
+                                arena.setObstacleImageID(curObsNum, messageArr[1]);
                             } catch (Exception e) {
                                 if (DEBUG) {
                                     displayMessage("DEBUG\nInvalid message: " + message);
@@ -436,7 +438,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
             } else { // start timer
                 if (b.getId() == R.id.startExplore) {
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
-                    curObsNum = 0;
+                    curObsNum = "0";
                     b.setText(R.string.stop_explore);
                     Cell curCell;
                     int xCoord, yCoord;

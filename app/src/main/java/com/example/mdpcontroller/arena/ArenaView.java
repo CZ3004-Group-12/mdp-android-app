@@ -472,4 +472,15 @@ public class ArenaView extends View {
     public void setEventListener(DataEventListener dataEventListener) {
         this.dataEventListener = dataEventListener;
     }
+
+    public String findObstacle(int xCoord, int yCoord) {
+        for (int i=0;i<obstacles.size();i++) {
+            Obstacle obs = obstacles.get(i);
+            if (obs.getCell().getCol() == xCoord && obs.getCell().getRow() == yCoord){
+                return Integer.toString(i+1);
+            }
+        }
+        return Integer.toString(0);
+    }
+
 }
