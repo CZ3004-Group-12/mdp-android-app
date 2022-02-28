@@ -403,13 +403,13 @@ public class ArenaView extends View {
                 cellRect = new RectF((obstacle.cell.col+1.2f) * cellSize, (obstacle.cell.row +0.1f) * cellSize, (obstacle.cell.col +1.9f) * cellSize, (obstacle.cell.row +0.25f) * cellSize);
                 break;
             case "LEFT":
-                cellRect = new RectF((obstacle.cell.col + 0.11f + 1) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + (1f / 4) + 1) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
+                cellRect = new RectF((obstacle.cell.col +1.1f) * cellSize, (obstacle.cell.row +0.2f) * cellSize, (obstacle.cell.col + 1.25f) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
                 break;
             case "RIGHT":
-                cellRect = new RectF((obstacle.cell.col+ 0.2f + 1.5f) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + 1f + 1) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
+                cellRect = new RectF((obstacle.cell.col+ 1.85f) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + 2f) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
                 break;
             case "BOTTOM":
-                cellRect = new RectF((obstacle.cell.col+ 0.2f + 1) * cellSize, (obstacle.cell.row+  1f)* cellSize, (obstacle.cell.col + 0.9f + 1) * cellSize, (obstacle.cell.row + (0.75f))*cellSize);
+                cellRect = new RectF((obstacle.cell.col+1.2f) * cellSize, (obstacle.cell.row+ 0.85f)* cellSize, (obstacle.cell.col + 1.9f) * cellSize, (obstacle.cell.row + 1f)*cellSize);
                 //(1f), canvasHeight, 1f*canvasWidth, (1f/1.25f)*canvasHeight
                 break;
         }
