@@ -136,83 +136,100 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     // Create a BroadcastReceiver for message_received.
     private final BroadcastReceiver msgReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-            String message =  intent.getExtras().getString("message");
-            try{
-                //Categorize received messages
-                String[] messageArr = message.split("\\|"); // remove header
-                if (messageArr.length > 1) messageArr = messageArr[1].split(DELIMITER);
-                else messageArr = messageArr[0].split(DELIMITER);
-                switch(messageArr[0]){
-                    // Format: ROBOT/<dims>/<posList>
-                    case("ROBOT"): {
-                        if (messageArr.length < 3) break;
-                        TextView obstacleStatus = findViewById(R.id.obstacleStatusTextView);
-                        curObsNum++;
-                        obstacleStatus.setText("Searching for obstacle " + curObsNum);
-                        moveList.clear();
-                        moveList.addAll(Arrays.asList(messageArr).subList(2, messageArr.length));
-                        displayMessage("Status update\n" + "Movement Started");
-                        break;
-                    }
-                    case("DONE"): {
-                        if (moveList.size() == 0) break;
-                        String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
-                        int xCoord = (int)Double.parseDouble(args[0].trim());
-                        int yCoord = ArenaView.ROWS-1-(int)Double.parseDouble(args[1].trim());
-                        String dir = "N";
-                        switch(args[2].trim()){
-                            case("0"): dir="N";break;
-                            case("90"): dir="W";break;
-                            case("-90"): dir="E";break;
-                            case("180"): dir="S";break;
+            String fullMessage =  intent.getExtras().getString("message");
+            if (fullMessage.length() ==0) return;
+            //Categorize received messages
+            fullMessage = fullMessage.substring(1);
+            String[] commandArr = fullMessage.split("&");
+            for (String message: commandArr) {
+                try {
+                    String[] messageArr = message.split("\\|"); // remove header
+                    if (messageArr.length > 1) messageArr = messageArr[1].split(DELIMITER);
+                    else messageArr = messageArr[0].split(DELIMITER);
+                    switch (messageArr[0]) {
+                        // Format: ROBOT/<dims>/<posList>
+                        case ("ROBOT"): {
+                            if (messageArr.length < 3) break;
+                            TextView obstacleStatus = findViewById(R.id.obstacleStatusTextView);
+                            curObsNum++;
+                            obstacleStatus.setText("Searching for obstacle " + curObsNum);
+                            moveList.clear();
+                            moveList.addAll(Arrays.asList(messageArr).subList(2, messageArr.length));
+                            displayMessage("Status update\n" + "Movement Started");
+                            break;
                         }
-                        arena.setRobot(xCoord, yCoord, dir);
-                        TextView robotPosTextView = findViewById(R.id.robotPosTextView);
-                        robotPosTextView.setText(String.format(Locale.getDefault(), "X: %d Y: %d Dir: %s", xCoord, yCoord, dir));
-                        moveList.remove(0);
-                        break;
-                    }
-                    // Format: TARGET/<num>/<id>
-                    case("TARGET") :{
-                        try{
-                            arena.setObstacleImageID(messageArr[1], messageArr[2]);
-                        } catch (Exception e) {
-                            if (DEBUG){
-                                displayMessage("DEBUG\nInvalid message: " +message);
+                        case ("DONE"): {
+                            if (moveList.size() == 0) break;
+                            int numInst = Integer.parseInt(messageArr[1]);
+                            for (int i = 0; i < numInst; i++) {
+                                String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
+                                int xCoord = (int) Double.parseDouble(args[0].trim());
+                                int yCoord = ArenaView.ROWS - 1 - (int) Double.parseDouble(args[1].trim());
+                                String dir = "N";
+                                switch (args[2].trim()) {
+                                    case ("0"):
+                                        dir = "N";
+                                        break;
+                                    case ("90"):
+                                        dir = "W";
+                                        break;
+                                    case ("-90"):
+                                        dir = "E";
+                                        break;
+                                    case ("180"):
+                                        dir = "S";
+                                        break;
+                                }
+                                arena.setRobot(xCoord, yCoord, dir);
+                                TextView robotPosTextView = findViewById(R.id.robotPosTextView);
+                                robotPosTextView.setText(String.format(Locale.getDefault(), "X: %d Y: %d Dir: %s", xCoord, yCoord, dir));
+                                moveList.remove(0);
+                                Thread.sleep(500);
                             }
-                            System.out.println("Invalid imageID or obstacleID: "+message);
+                            break;
                         }
-                        break;
-                    }
-                    // Format: STATUS/<msg>
-                    case("STATUS"): {
-                        displayMessage("Status update\n" + messageArr[1]);
-                        break;
-                    }
-                    // Format: DEBUG/<msg>
-                    case("DEBUG"): {
-                        if (DEBUG) displayMessage("DEBUG\n" + messageArr[1]);
-                        break;
-                    }
-                    case("FINISH"):{
-                        if (messageArr[1].equals("EXPLORE")){
-                            startStopTimer(findViewById(R.id.startExplore));
-                            String timeTaken = ((TextView)findViewById(R.id.timerTextViewExplore)).getText().toString();
-                            displayMessage("Status update\n" + "Exploration complete!\nTime taken: " + timeTaken);
-                        } else {
-                            startStopTimer(findViewById(R.id.startPath));
-                            String timeTaken = ((TextView)findViewById(R.id.timerTextViewExplore)).getText().toString();
-                            displayMessage("Status update\n" + "Fastest path complete!\nTime taken: " + timeTaken);
+                        // Format: TARGET/<num>/<id>
+                        case ("TARGET"): {
+                            try {
+                                arena.setObstacleImageID(messageArr[1], messageArr[2]);
+                            } catch (Exception e) {
+                                if (DEBUG) {
+                                    displayMessage("DEBUG\nInvalid message: " + message);
+                                }
+                                System.out.println("Invalid imageID or obstacleID: " + message);
+                            }
+                            break;
                         }
-                        break;
+                        // Format: STATUS/<msg>
+                        case ("STATUS"): {
+                            displayMessage("Status update\n" + messageArr[1]);
+                            break;
+                        }
+                        // Format: DEBUG/<msg>
+                        case ("DEBUG"): {
+                            if (DEBUG) displayMessage("DEBUG\n" + messageArr[1]);
+                            break;
+                        }
+                        case ("FINISH"): {
+                            if (messageArr[1].equals("EXPLORE")) {
+                                startStopTimer(findViewById(R.id.startExplore));
+                                String timeTaken = ((TextView) findViewById(R.id.timerTextViewExplore)).getText().toString();
+                                displayMessage("Status update\n" + "Exploration complete!\nTime taken: " + timeTaken);
+                            } else {
+                                startStopTimer(findViewById(R.id.startPath));
+                                String timeTaken = ((TextView) findViewById(R.id.timerTextViewExplore)).getText().toString();
+                                displayMessage("Status update\n" + "Fastest path complete!\nTime taken: " + timeTaken);
+                            }
+                            break;
+                        }
+                        default: {
+                            displayMessage("ERROR (Unrecognized command)\n" + messageArr[0]);
+                        }
                     }
-                    default: {
-                        displayMessage("ERROR (Unrecognized command)\n" + messageArr[0]);
-                    }
+                } catch (Exception e) {
+                    // message incorrect message parameters
+                    displayMessage("ERROR (Incorrect message format)\n" + message);
                 }
-            } catch(Exception e){
-                // message incorrect message parameters
-                displayMessage("ERROR (Incorrect message format)\n" + message);
             }
         }
     };

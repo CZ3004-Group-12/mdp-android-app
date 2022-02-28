@@ -24,6 +24,6 @@
     <string name="reconnect_as_client">Connect As Client</string>
     <string name="prevent_input_on_movement">Prevent Input On Movement</string>
     <string name="robot_status">Robot Status</string>
-    <string name="x_y_dir">X: Y: Dir:</string>
+    <string name="x_y_dir">X:   Y:   Dir:</string>
     <string name="idle">idle</string>
 </resources>

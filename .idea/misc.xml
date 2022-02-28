@@ -5,13 +5,9 @@
       <map>
         <entry key="..\:/School/MDP/mdp-android-app/app/src/main/res/layout/fragment_explore_tab.xml" value="0.36666666666666664" />
         <entry key="..\:/School/MDP/mdp-android-app/app/src/main/res/layout/fragment_path_tab.xml" value="0.36666666666666664" />
-        <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/drawable/back.xml" value="0.1" />
-        <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/drawable/rounded_corner.xml" value="0.1" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout-w600dp/obstacle_pop_up.xml" value="0.42421875" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout-w600dp/obstacle_pop_up_tablet.xml" value="0.42421875" />
-        <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/activity_device_list.xml" value="0.1" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/activity_main.xml" value="0.55" />
-        <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/fragment_explore_tab.xml" value="0.67" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/fragment_manual_tab.xml" value="0.42421875" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/fragment_path_tab.xml" value="0.42421875" />
         <entry key="..\:/Users/Josh/AndroidStudioProjects/MDPController/app/src/main/res/layout/fragment_settings_tab.xml" value="0.42421875" />
@@ -20,7 +16,7 @@
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/drawable/tab_indicator.xml" value="0.20555555555555555" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout-w600dp/obstacle_pop_up.xml" value="0.38125" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/activity_main.xml" value="0.5" />
-        <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/fragment_explore_tab.xml" value="0.6" />
+        <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/fragment_explore_tab.xml" value="0.4640776699029126" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/fragment_manual_tab.xml" value="0.536" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/fragment_path_tab.xml" value="0.4" />
         <entry key="..\:/Users/thein/Desktop/MDP/Source code/mdp-android-app/app/src/main/res/layout/fragment_settings_tab.xml" value="0.38125" />
@@ -71,7 +67,7 @@
       </value>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
