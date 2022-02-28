@@ -9,11 +9,13 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import com.example.mdpcontroller.R;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -315,11 +317,11 @@ public class ArenaView extends View {
                         setObstacleEdit(event,curCell,curRect);
                         break;
 
-//                    case MotionEvent.ACTION_POINTER_UP:
-//                        mode = DRAG;
-//                        previousTranslateX = translateX;
-//                        previousTranslateY = translateY;
-//                        break;
+                    case MotionEvent.ACTION_POINTER_UP:
+                        mode = DRAG;
+                        previousTranslateX = translateX;
+                        previousTranslateY = translateY;
+                        break;
                 }
             }
         }

@@ -59,6 +59,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     // for timer
     private final Handler timerHandler  = new Handler();
     TimerRunnable timerRunnable = null;
+    private int curObsNum = 0;
 
     TabLayout tabLayout;
     ViewPager tabViewPager;
@@ -145,6 +146,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     // Format: ROBOT/<dims>/<posList>
                     case("ROBOT"): {
                         if (messageArr.length < 3) break;
+                        TextView obstacleStatus = findViewById(R.id.obstacleStatusTextView);
+                        curObsNum++;
+                        obstacleStatus.setText("Searching for obstacle " + curObsNum);
+                        moveList.clear();
                         moveList.addAll(Arrays.asList(messageArr).subList(2, messageArr.length));
                         displayMessage("Status update\n" + "Movement Started");
                         break;
@@ -162,6 +167,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                             case("180"): dir="S";break;
                         }
                         arena.setRobot(xCoord, yCoord, dir);
+                        TextView robotPosTextView = findViewById(R.id.robotPosTextView);
+                        robotPosTextView.setText(String.format(Locale.getDefault(), "X: %d Y: %d Dir: %s", xCoord, yCoord, dir));
                         moveList.remove(0);
                         break;
                     }
@@ -412,6 +419,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
             } else { // start timer
                 if (b.getId() == R.id.startExplore) {
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
+                    curObsNum = 0;
                     b.setText(R.string.stop_explore);
                     Cell curCell;
                     int xCoord, yCoord;
