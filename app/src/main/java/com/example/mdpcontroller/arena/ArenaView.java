@@ -315,11 +315,11 @@ public class ArenaView extends View {
                         setObstacleEdit(event,curCell,curRect);
                         break;
 
-                    case MotionEvent.ACTION_POINTER_UP:
-                        mode = DRAG;
-                        previousTranslateX = translateX;
-                        previousTranslateY = translateY;
-                        break;
+//                    case MotionEvent.ACTION_POINTER_UP:
+//                        mode = DRAG;
+//                        previousTranslateX = translateX;
+//                        previousTranslateY = translateY;
+//                        break;
                 }
             }
         }
@@ -332,23 +332,25 @@ public class ArenaView extends View {
 
     private void dragObstacle(MotionEvent event, Cell curCell, Obstacle obstacle){
         int index = obstacles.indexOf(obstacle);
-        if(curCell.type.equals("")){
-        switch (event.getAction()) {
-                case MotionEvent.ACTION_UP:
-                    if(obstacles.size() != 0){
-                        curCell.setType("obstacle");
-                        obstacles.get(index).cell = curCell;
-                        obstacleSelected = false;
-                    }
-                    break;
-                default:
-                    if(obstacles.size() != 0){
-                        obstacleSelected = true;
-                        curCell.type = "";
-                        obstacles.get(index).cell = curCell;
-                    }
+        if( index == -1){
+            if(curCell.type.equals("")){
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        if(obstacles.size() != 0){
+                            curCell.setType("obstacle");
+                            obstacles.get(index).cell = curCell;
+                            obstacleSelected = false;
+                        }
+                        break;
+                    default:
+                        if(obstacles.size() != 0){
+                            obstacleSelected = true;
+                            curCell.type = "";
+                            obstacles.get(index).cell = curCell;
+                        }
 
-                    break;
+                        break;
+                }
             }
         }
 
