@@ -479,8 +479,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     }
     private void showObstacleDialog() {
         int obsIndex = arena.obstacles.indexOf(arena.editingObs);
-        int obsX = arena.editingObs.getCell().getRow();
-        int obsY = arena.editingObs.getCell().getCol();
+        int obsX = arena.editingObs.getCell().getCol();
+        int obsY = arena.editingObs.getCell().getRow();
         String imageDir=arena.editingObs.getImageDir();;
         String imageID;
         if(arena.editingObs.explored == false){
@@ -502,14 +502,14 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
             curCell = entry.getKey();
             curRect = entry.getValue();
 
-            if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() == "obstacle" ){
+            if(curCell.getCol() == x && curCell.getRow() == y && curCell.getType() == "obstacle" ){
                 curCell.setType("");
             }
-            if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() == ""){
+            if(curCell.getCol() == x && curCell.getRow() == y && curCell.getType() == ""){
                 curCell.setType("obstacle");
                 arena.obstacles.get(obsIndex).setImageDir(imageDir);
                 arena.obstacles.get(obsIndex).setCell(curCell);
-            }else if(curCell.getCol() == y && curCell.getRow() == x && curCell.getType() != ""){
+            }else if(curCell.getCol() == x && curCell.getRow() == y && curCell.getType() != ""){
                 arena.obstacles.get(obsIndex).setImageDir(imageDir);
                 Toast toast = Toast.makeText(getApplicationContext(),
                         "Grid is already occupied",

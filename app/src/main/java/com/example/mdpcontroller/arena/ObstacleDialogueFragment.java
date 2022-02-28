@@ -76,8 +76,8 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
 //        xPos.setText(obstacleView.x.toString());
         yPos = view.findViewById(R.id.yPos);
         obstacleView.y = getArguments().getInt("OBSY");
-        Integer convertedY = obstacleView.y;
-        Integer convertedX = 19 - obstacleView.x;
+        Integer convertedY = 19- obstacleView.y;
+        Integer convertedX = obstacleView.x;
 //        yPos.setText(obstacleView.y.toString());
         xPos.setText(convertedX.toString());
         yPos.setText(convertedY.toString());
@@ -133,6 +133,7 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
             public void afterTextChanged(Editable s) {
                 if(s.length() != 0)
                     obstacleView.y = Integer.parseInt(s.toString());
+                    obstacleView.y = 19 - obstacleView.y;
             }
 
             @Override
@@ -145,6 +146,7 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
                                       int before, int count) {
                 if(s.length() != 0){
                     obstacleView.y = Integer.parseInt(s.toString());
+                    obstacleView.y = 19 - obstacleView.y;
                 }
 
 
@@ -162,7 +164,6 @@ public class ObstacleDialogueFragment extends android.app.DialogFragment{
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean obstacleEdit = false;
                 dialogDataListener.dialogData(getArguments().getInt("OBSINDEX"),imageDir.getSelectedItem().toString(), obstacleView.x, obstacleView.y);
                 dialogDataListener.setObstacleEdit(false);
                 getDialog().dismiss();

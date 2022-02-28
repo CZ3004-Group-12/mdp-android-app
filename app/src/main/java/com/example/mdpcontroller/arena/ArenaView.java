@@ -1,9 +1,7 @@
 package com.example.mdpcontroller.arena;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -11,23 +9,13 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.widget.PopupWindow;
 
 import androidx.annotation.Nullable;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModelProvider;
-
-import com.example.mdpcontroller.BluetoothService;
 import com.example.mdpcontroller.R;
-import com.example.mdpcontroller.tab.AppDataModel;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
-import java.util.Stack;
-import java.util.concurrent.TimeUnit;
+
 
 public class ArenaView extends View {
     //Zoom & Scroll
@@ -412,7 +400,7 @@ public class ArenaView extends View {
         // For all plotting of rectangles, need to +1 to the col value to account for the grid numbers
         switch (obstacle.imageDir) {
             case "TOP":
-                cellRect = new RectF((obstacle.cell.col + 0.2f + 1) * cellSize, (obstacle.cell.row + 0.11f) * cellSize, (obstacle.cell.col + 0.9f + 1) * cellSize, (obstacle.cell.row + (1f / 4)) * cellSize);
+                cellRect = new RectF((obstacle.cell.col+1.2f) * cellSize, (obstacle.cell.row +0.1f) * cellSize, (obstacle.cell.col +1.9f) * cellSize, (obstacle.cell.row +0.25f) * cellSize);
                 break;
             case "LEFT":
                 cellRect = new RectF((obstacle.cell.col + 0.11f + 1) * cellSize, (obstacle.cell.row + 0.2f) * cellSize, (obstacle.cell.col + (1f / 4) + 1) * cellSize, (obstacle.cell.row + 0.9f) * cellSize);
@@ -425,7 +413,7 @@ public class ArenaView extends View {
                 //(1f), canvasHeight, 1f*canvasWidth, (1f/1.25f)*canvasHeight
                 break;
         }
-        int cellRadius = 1000;
+        int cellRadius = 10;
         canvas.drawRoundRect(cellRect, cellRadius, cellRadius, obstacleHeadPaint);
     }
 
