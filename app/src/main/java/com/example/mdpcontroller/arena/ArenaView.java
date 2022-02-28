@@ -332,7 +332,7 @@ public class ArenaView extends View {
 
     private void dragObstacle(MotionEvent event, Cell curCell, Obstacle obstacle){
         int index = obstacles.indexOf(obstacle);
-        if( index == -1){
+        try{
             if(curCell.type.equals("")){
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_UP:
@@ -352,6 +352,8 @@ public class ArenaView extends View {
                         break;
                 }
             }
+        }catch (Exception e){
+            System.out.print(e);
         }
 
         invalidate();
