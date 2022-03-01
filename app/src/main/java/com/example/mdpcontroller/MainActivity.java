@@ -157,7 +157,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                             int yCoord = ArenaView.ROWS - 1 - Integer.parseInt(messageArr[1].split("-")[1]);
                             curObsNum = arena.findObstacle(xCoord, yCoord);
                             if (obstacleStatus != null) {
-                                obstacleStatus.setText("Status: Searching for obstacle " + curObsNum);
+                                obstacleStatus.setText("Searching for obstacle " + curObsNum);
                                 displayMessage("Status update\nSearching for obstacle " + curObsNum);
                             }
                             moveList.clear();

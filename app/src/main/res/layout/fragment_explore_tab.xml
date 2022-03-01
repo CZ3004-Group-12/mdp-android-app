@@ -137,31 +137,109 @@
         app:layout_constraintStart_toStartOf="@+id/top_guideline23"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/robotPosTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/x_y_dir"
-        android:textColor="@color/gray_500"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/top_guideline24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/top_guideline10"
-        app:layout_constraintTop_toTopOf="parent" />
+    <!--    <TextView-->
+<!--        android:id="@+id/obstacleStatusTextView"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_marginStart="5dp"-->
+<!--        android:layout_marginLeft="5dp"-->
+<!--        android:layout_marginEnd="10dp"-->
+<!--        android:layout_marginRight="10dp"-->
+<!--        android:layout_marginBottom="8dp"-->
+<!--        android:background="@color/gray_500"-->
+<!--        android:singleLine="false"-->
+<!--        android:text="@string/idle"-->
+<!--        android:textColor="@color/black"-->
+<!--        android:textSize="14sp"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHorizontal_bias="0.134"-->
+<!--        app:layout_constraintStart_toStartOf="@+id/top_guideline10"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/top_guideline24"-->
+<!--        app:layout_constraintVertical_bias="0.221"-->
+<!--        android:scrollbars="vertical"/>-->
 
     <TextView
-        android:id="@+id/obstacleStatusTextView"
-        android:layout_width="wrap_content"
+        android:id="@+id/robotPosTextView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/idle"
-        android:textColor="@color/gray_500"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:text="@string/x_y_dir"
         android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/top_guideline13"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.523"
+        app:layout_constraintStart_toEndOf="@+id/pos_textview"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.501"
+        android:background="@drawable/rounded_corner"
+        android:backgroundTint="@color/white"
+        android:textColor="@color/black"
+        android:padding="3dp"/>
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toStartOf="@+id/robotPosTextView"
+        app:layout_constraintHorizontal_bias="0.134"
+        app:layout_constraintStart_toStartOf="@+id/top_guideline10"
         app:layout_constraintTop_toTopOf="@+id/top_guideline24"
-        app:layout_constraintVertical_bias="0.517" />
+        app:layout_constraintVertical_bias="0.221"
+        android:background="@drawable/rounded_corner"
+        android:backgroundTint="@color/white">
+
+        <TextView
+            android:id="@+id/obstacleStatusTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:singleLine="false"
+            android:text="@string/idle"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:padding="3dp" />
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:text="Status:"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/top_guideline15"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/top_guideline10"
+        app:layout_constraintTop_toTopOf="@+id/top_guideline13"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/pos_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
+        android:text="Position : "
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/top_guideline13"
+        app:layout_constraintStart_toStartOf="@+id/top_guideline10"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
