@@ -597,7 +597,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
         super.onResume();
         if (BluetoothService.obstacles == null) return;
         arena.obstacles = BluetoothService.obstacles;
-        arena.cells = BluetoothService.cells;
+        for (Obstacle obs: arena.obstacles){
+            obs.cell = arena.cells[obs.cell.row][obs.cell.col];
+            obs.cell.setType("obstacle");
+        }
     }
 
 }
