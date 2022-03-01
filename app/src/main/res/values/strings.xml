@@ -25,5 +25,5 @@
     <string name="prevent_input_on_movement">Prevent Input On Movement</string>
     <string name="robot_status">Robot Status</string>
     <string name="x_y_dir">( - , - , - )</string>
-    <string name="idle">Lorem Ipsum is simply dummy text of the printing and typesetting industry.and typesetting industry.</string>
+    <string name="idle">Idle</string>
 </resources>

@@ -73,9 +73,9 @@ public class ArenaView extends View {
         textPaint = new Paint();
         textPaint.setColor(getResources().getColor(R.color.white));
         robotBodyPaint = new Paint();
-        robotBodyPaint.setColor(getResources().getColor(R.color.green_500));
+        robotBodyPaint.setColor(getResources().getColor(R.color.orange_400));
         robotHeadPaint = new Paint();
-        robotHeadPaint.setColor(getResources().getColor(R.color.green_700));
+        robotHeadPaint.setColor(getResources().getColor(R.color.orange_700));
         obstaclePaint = new Paint();
         obstaclePaint.setColor(getResources().getColor(R.color.black));
         obstacleImageIDPaint = new Paint();
