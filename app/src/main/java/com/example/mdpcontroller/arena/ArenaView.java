@@ -458,6 +458,9 @@ public class ArenaView extends View {
     }
 
     public void clearObstacles(){
+        for(Obstacle obstacle: obstacles){
+            obstacle.getCell().setType("");
+        }
         obstacles.clear();
         invalidate();
     }
