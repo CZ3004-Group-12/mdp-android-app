@@ -239,8 +239,8 @@ public class ArenaView extends View {
                                 invalidate();
                                 obstacleSelected = false;
                             } else if(obstacleSelected && event.getAction()==MotionEvent.ACTION_MOVE){
+                                editingObs.getCell().setType("");
                                 dragObstacle(event, entry.getKey(), editingObs);
-
                             }
 
                         }else if(isSetRobot){
@@ -255,6 +255,7 @@ public class ArenaView extends View {
                     if(event.getAction() ==MotionEvent.ACTION_MOVE){
                         if(x < gridMap.get(maxLeft).centerX() || x > gridMap.get(maxRight).centerX()){
                             if(editingObs != null){
+                                editingObs.getCell().setType("");
                                 obstacles.remove(editingObs);
                                 obstacleSelected = false;
                                 invalidate();
