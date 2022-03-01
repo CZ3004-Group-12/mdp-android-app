@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.example.mdpcontroller.arena.ArenaView;
 import com.example.mdpcontroller.arena.Cell;
+import com.example.mdpcontroller.arena.Obstacle;
 import com.example.mdpcontroller.arena.ObstacleDialogueFragment;
 import com.example.mdpcontroller.arena.Robot;
 import com.example.mdpcontroller.tab.AppDataModel;
@@ -462,6 +463,13 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 btService.write("STOP");
             } else { // start timer
                 if (b.getId() == R.id.startExplore) {
+                    if(arena.obstacles.size() > 0){
+                        for(Obstacle obstacle: arena.obstacles){
+                            obstacle.explored = false;
+                            obstacle.imageID = "-1";
+                        }
+                        arena.invalidate();
+                    }
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
                     curObsNum = "0";
                     b.setText(R.string.stop_explore);
