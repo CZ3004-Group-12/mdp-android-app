@@ -166,7 +166,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         }
                         case ("DONE"): {
                             int numInst = Integer.parseInt(messageArr[1]);
-                            if (moveList.size() < numInst) break;
+                            if (moveList.size() < numInst || moveList.size() == 0) break;
                             new Thread() {
                                 public void run() {
                                     String prevDir = null;
@@ -575,6 +575,21 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     @Override
     public void setObstacleEdit(boolean obsEdit) {
         arena.obstacleEdit = obsEdit;
+    }
+    @Override
+    public void onPause(){
+        super.onPause();
+        if (arena == null) return;
+        BluetoothService.obstacles = arena.obstacles;
+        BluetoothService.cells = arena.cells;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (BluetoothService.obstacles == null) return;
+        arena.obstacles = BluetoothService.obstacles;
+        arena.cells = BluetoothService.cells;
     }
 
 }

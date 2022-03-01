@@ -40,7 +40,7 @@ public class ArenaView extends View {
 
 
     //Arena
-    private Cell[][] cells;
+    public Cell[][] cells;
     public Map<Cell, RectF> gridMap;
     public ArrayList<Obstacle> obstacles;
     public Obstacle editingObs;

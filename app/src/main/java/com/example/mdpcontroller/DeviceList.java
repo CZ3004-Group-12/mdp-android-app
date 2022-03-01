@@ -94,10 +94,6 @@ public class DeviceList extends AppCompatActivity {
         }
     };
 
-    public void finish() {
-        super.finish();
-    }
-
     public void toggleScan(View view){
         System.out.println("toggleScan");
         int resourceId = 0;

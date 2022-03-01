@@ -19,9 +19,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
+import com.example.mdpcontroller.arena.Cell;
+import com.example.mdpcontroller.arena.Obstacle;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,6 +35,8 @@ public class BluetoothService {
     public static BluetoothSocket mBluetoothSocket;
     public static BluetoothDevice mConnectedDevice;
     public static boolean CONNECT_AS_CLIENT = true; // if false, will make device discoverable and accept connections
+    public static Cell[][] cells;
+    public static ArrayList<Obstacle> obstacles = null;
     public enum BluetoothStatus {
         UNCONNECTED, SCANNING, CONNECTING, CONNECTED, DISCONNECTED
     }
