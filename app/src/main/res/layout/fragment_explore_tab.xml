@@ -15,6 +15,13 @@
         app:layout_constraintGuide_percent="0.33" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/top_guideline24"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/top_guideline10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -131,40 +138,29 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/robotStatusStatic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/robot_status"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/top_guideline13"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/top_guideline10"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
         android:id="@+id/robotPosTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/x_y_dir"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/gray_500"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/top_guideline15"
+        app:layout_constraintBottom_toTopOf="@+id/top_guideline24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/top_guideline10"
-        app:layout_constraintTop_toTopOf="@+id/top_guideline13" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/obstacleStatusTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/idle"
+        android:textColor="@color/gray_500"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
-        app:layout_constraintStart_toStartOf="@+id/top_guideline10"
-        app:layout_constraintTop_toTopOf="@+id/top_guideline15"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="@+id/robotPosTextView"
+        app:layout_constraintTop_toTopOf="@+id/top_guideline24"
         app:layout_constraintVertical_bias="0.517" />
 
 

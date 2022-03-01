@@ -156,7 +156,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                             int yCoord = ArenaView.ROWS - 1 - Integer.parseInt(messageArr[1].split("-")[1]);
                             curObsNum = arena.findObstacle(xCoord, yCoord);
                             if (obstacleStatus != null) {
-                                obstacleStatus.setText("Searching for obstacle " + curObsNum);
+                                obstacleStatus.setText("Status: Searching for obstacle " + curObsNum);
                                 displayMessage("Status update\nSearching for obstacle " + curObsNum);
                             }
                             moveList.clear();
@@ -169,6 +169,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                             if (moveList.size() < numInst) break;
                             new Thread() {
                                 public void run() {
+                                    String prevDir = null;
                                     for (int i = 0; i < numInst; i++) {
                                         String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
                                         int xCoord = (int) Double.parseDouble(args[0].trim());
@@ -190,11 +191,17 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                         }
                                         arena.setRobot(xCoord, yCoord, dir);
                                         Intent intent = new Intent("message_received");
-                                        intent.putExtra("message", "ROBOT_STATUS/"+String.format(Locale.getDefault(), "X: %d Y: %d Dir: %s", xCoord, yCoord, dir));
+                                        intent.putExtra("message", "ROBOT_STATUS/"+String.format(Locale.getDefault(), "Position: (%3d,%3d, %s )", xCoord, yCoord, dir));
                                         context.sendBroadcast(intent);
                                         moveList.remove(0);
                                         try {
-                                            Thread.sleep(1000);
+                                            if (dir.equals(prevDir)){
+                                                Thread.sleep(1000);
+                                            }
+                                            else{
+                                                Thread.sleep(3000);
+                                            }
+                                            prevDir = dir;
                                         } catch (InterruptedException e) {
                                             System.out.println("Interrupted");
                                         }
