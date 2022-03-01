@@ -137,6 +137,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     private final BroadcastReceiver msgReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String fullMessage =  intent.getExtras().getString("message");
+            if (DEBUG) displayMessage(fullMessage);
             if (fullMessage.length() ==0) return;
             //Categorize received messages
             if (fullMessage.charAt(0) == '&') fullMessage = fullMessage.substring(1);
@@ -154,40 +155,52 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                             int xCoord = Integer.parseInt(messageArr[1].split("-")[0]);
                             int yCoord = ArenaView.ROWS - 1 - Integer.parseInt(messageArr[1].split("-")[1]);
                             curObsNum = arena.findObstacle(xCoord, yCoord);
-                            obstacleStatus.setText("Searching for obstacle " + curObsNum);
+                            if (obstacleStatus != null) {
+                                obstacleStatus.setText("Searching for obstacle " + curObsNum);
+                                displayMessage("Status update\nSearching for obstacle " + curObsNum);
+                            }
                             moveList.clear();
                             moveList.addAll(Arrays.asList(messageArr).subList(2, messageArr.length));
                             displayMessage("Status update\n" + "Movement Started");
                             break;
                         }
                         case ("DONE"): {
-                            if (moveList.size() == 0) break;
                             int numInst = Integer.parseInt(messageArr[1]);
-                            for (int i = 0; i < numInst; i++) {
-                                String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
-                                int xCoord = (int) Double.parseDouble(args[0].trim());
-                                int yCoord = ArenaView.ROWS - 1 - (int) Double.parseDouble(args[1].trim());
-                                String dir = "N";
-                                switch (args[2].trim()) {
-                                    case ("0"):
-                                        dir = "N";
-                                        break;
-                                    case ("90"):
-                                        dir = "W";
-                                        break;
-                                    case ("-90"):
-                                        dir = "E";
-                                        break;
-                                    case ("180"):
-                                        dir = "S";
-                                        break;
+                            if (moveList.size() < numInst) break;
+                            new Thread() {
+                                public void run() {
+                                    for (int i = 0; i < numInst; i++) {
+                                        String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
+                                        int xCoord = (int) Double.parseDouble(args[0].trim());
+                                        int yCoord = ArenaView.ROWS - 1 - (int) Double.parseDouble(args[1].trim());
+                                        String dir = "N";
+                                        switch (args[2].trim()) {
+                                            case ("0"):
+                                                dir = "N";
+                                                break;
+                                            case ("90"):
+                                                dir = "W";
+                                                break;
+                                            case ("-90"):
+                                                dir = "E";
+                                                break;
+                                            case ("180"):
+                                                dir = "S";
+                                                break;
+                                        }
+                                        arena.setRobot(xCoord, yCoord, dir);
+                                        Intent intent = new Intent("message_received");
+                                        intent.putExtra("message", "ROBOT_STATUS/"+String.format(Locale.getDefault(), "X: %d Y: %d Dir: %s", xCoord, yCoord, dir));
+                                        context.sendBroadcast(intent);
+                                        moveList.remove(0);
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            System.out.println("Interrupted");
+                                        }
+                                    }
                                 }
-                                arena.setRobot(xCoord, yCoord, dir);
-                                TextView robotPosTextView = findViewById(R.id.robotPosTextView);
-                                robotPosTextView.setText(String.format(Locale.getDefault(), "X: %d Y: %d Dir: %s", xCoord, yCoord, dir));
-                                moveList.remove(0);
-                                Thread.sleep(500);
-                            }
+                            }.start();
                             break;
                         }
                         // Format: TARGET/<num>/<id>
@@ -200,6 +213,11 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                 }
                                 System.out.println("Invalid imageID or obstacleID: " + message);
                             }
+                            break;
+                        }
+                        case("ROBOT_STATUS"):{
+                            TextView robotPosTextView = findViewById(R.id.robotPosTextView);
+                            robotPosTextView.setText(messageArr[1]);
                             break;
                         }
                         // Format: STATUS/<msg>
@@ -230,7 +248,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     }
                 } catch (Exception e) {
                     // message incorrect message parameters
-                    displayMessage("ERROR (Incorrect message format)\n" + message);
+                    displayMessage("ERROR (" + e.getMessage() + ")\n" + message);
                 }
             }
         }
