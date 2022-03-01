@@ -557,20 +557,22 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     @Override
     public void dialogData(int obsIndex, String imageDir, int x, int y) {
         Cell curCell;
-        RectF curRect;
+        int oldObsX = arena.obstacles.get(obsIndex).cell.col;
+        int oldObsY = arena.obstacles.get(obsIndex).cell.row;
+        Cell obsCell = new Cell(oldObsX,oldObsY,"obstacle");
+
         for (Map.Entry<Cell, RectF> entry : arena.gridMap.entrySet()) {
             curCell = entry.getKey();
-            curRect = entry.getValue();
 
-            if(curCell.getCol() == x && curCell.getRow() == y && curCell.getType() == "obstacle" ){
-                curCell.setType("");
-            }
             if(curCell.getCol() == x && curCell.getRow() == y && curCell.getType() == ""){
                 curCell.setType("obstacle");
                 arena.obstacles.get(obsIndex).setImageDir(imageDir);
                 arena.obstacles.get(obsIndex).setCell(curCell);
             }else if(curCell.getCol() == x && curCell.getRow() == y && curCell.getType() != ""){
                 arena.obstacles.get(obsIndex).setImageDir(imageDir);
+                if (curCell == obsCell) {
+                    curCell.setType("");
+                }
                 Toast toast = Toast.makeText(getApplicationContext(),
                         "Grid is already occupied",
                         Toast.LENGTH_SHORT);
@@ -598,7 +600,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
         if (BluetoothService.obstacles == null) return;
         arena.obstacles = BluetoothService.obstacles;
         for (Obstacle obs: arena.obstacles){
-            obs.cell = arena.cells[obs.cell.row][obs.cell.col];
+            obs.cell = arena.cells[obs.cell.col][obs.cell.row];
             obs.cell.setType("obstacle");
         }
     }
