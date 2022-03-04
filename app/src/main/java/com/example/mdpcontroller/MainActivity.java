@@ -200,7 +200,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                                 Thread.sleep(1000);
                                             }
                                             else{
-                                                Thread.sleep(3000);
+                                                Thread.sleep(5000);
                                             }
                                             prevDir = dir;
                                         } catch (InterruptedException e) {
