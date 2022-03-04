@@ -163,15 +163,22 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                             moveList.clear();
                             moveList.addAll(Arrays.asList(messageArr).subList(2, messageArr.length));
                             displayMessage("Status update\n" + "Movement Started");
+                            if (timerRunnable != null && timerRunnable.startTime == 0){
+                                timerRunnable.startTime = System.currentTimeMillis();
+                                timerHandler.postDelayed(timerRunnable, 0);
+                            }
                             break;
                         }
                         case ("DONE"): {
-                            int numInst = Integer.parseInt(messageArr[1]);
+                            int numInst = 1;
+                            if(messageArr.length > 1) numInst = Integer.parseInt(messageArr[1]);
                             if (moveList.size() < numInst || moveList.size() == 0) break;
+                            int finalNumInst = numInst;
                             new Thread() {
                                 public void run() {
-                                    String prevDir = null;
-                                    for (int i = 0; i < numInst; i++) {
+                                    String prevDir = "N";
+                                    if (Robot.robotDir != null) prevDir = Robot.robotDir;
+                                    for (int i = 0; i < finalNumInst; i++) {
                                         String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
                                         int xCoord = (int) Double.parseDouble(args[0].trim());
                                         int yCoord = ArenaView.ROWS - 1 - (int) Double.parseDouble(args[1].trim());
@@ -190,11 +197,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                                 dir = "S";
                                                 break;
                                         }
-                                        arena.setRobot(xCoord, yCoord, dir);
-                                        Intent intent = new Intent("message_received");
-                                        intent.putExtra("message", "ROBOT_STATUS/"+String.format(Locale.getDefault(), "Position: (%3d,%3d, %s )", xCoord, yCoord, dir));
-                                        context.sendBroadcast(intent);
-                                        moveList.remove(0);
                                         try {
                                             if (dir.equals(prevDir)){
                                                 Thread.sleep(1000);
@@ -206,6 +208,11 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                         } catch (InterruptedException e) {
                                             System.out.println("Interrupted");
                                         }
+                                        arena.setRobot(xCoord, yCoord, dir);
+                                        Intent intent = new Intent("message_received");
+                                        intent.putExtra("message", "ROBOT_STATUS/"+String.format(Locale.getDefault(), "(%d,%s,%s)", xCoord, args[1].trim(), dir));
+                                        context.sendBroadcast(intent);
+                                        moveList.remove(0);
                                     }
                                 }
                             }.start();
@@ -241,6 +248,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         case ("FINISH"): {
                             if (messageArr[1].equals("EXPLORE")) {
                                 startStopTimer(findViewById(R.id.startExplore));
+                                TextView posTV = findViewById(R.id.robotPosTextView);
+                                TextView statTV = findViewById(R.id.obstacleStatusTextView);
+                                posTV.setText(R.string.x_y_dir);
+                                statTV.setText(R.string.idle);
                                 String timeTaken = ((TextView) findViewById(R.id.timerTextViewExplore)).getText().toString();
                                 displayMessage("Status update\n" + "Exploration complete!\nTime taken: " + timeTaken);
                             } else {
@@ -499,13 +510,14 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         cmd.append(String.format(Locale.getDefault(), "/(%02d,%02d,%02d,%s)", i, xCoord, yCoord, dir));
                     }
                     btService.write(cmd.toString());
+                    TextView rbTV = findViewById(R.id.obstacleStatusTextView);
+                    rbTV.setText(R.string.calc_path);
                 } else {
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewPath));
                     btService.write("START/PATH");
                     b.setText(R.string.stop_fastest_path);
                 }
-                timerRunnable.startTime = System.currentTimeMillis();
-                timerHandler.postDelayed(timerRunnable, 0);
+                timerRunnable.startTime = 0;
                 toggleActivateButtons(false);
             }
         } else {

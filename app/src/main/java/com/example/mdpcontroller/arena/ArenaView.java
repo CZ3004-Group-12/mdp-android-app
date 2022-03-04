@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -79,7 +80,8 @@ public class ArenaView extends View {
         obstaclePaint = new Paint();
         obstaclePaint.setColor(getResources().getColor(R.color.black));
         obstacleImageIDPaint = new Paint();
-        obstacleImageIDPaint.setColor(getResources().getColor(R.color.white));
+        obstacleImageIDPaint.setColor(getResources().getColor(R.color.black));
+        obstacleImageIDPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         obstacleNumPaint = new Paint();
         obstacleNumPaint.setColor(getResources().getColor(R.color.white));
         obstacleHeadPaint = new Paint();

@@ -26,4 +26,5 @@
     <string name="robot_status">Robot Status</string>
     <string name="x_y_dir">( - , - , - )</string>
     <string name="idle">Idle</string>
+    <string name="calc_path">Calculating path...</string>
 </resources>
