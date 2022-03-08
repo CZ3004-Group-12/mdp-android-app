@@ -61,6 +61,7 @@ public class DeviceList extends AppCompatActivity {
             bt.setText(R.string.disconnect_device);
         } else {
             // No devices connected, search for devices
+            deviceList.add("MDP-Team12\nE4:5F:01:55:A6:51");
             BluetoothService.startSearch();
             BluetoothService.setBtStatus(BluetoothService.BluetoothStatus.SCANNING, new HashMap<>(), this);
         }
