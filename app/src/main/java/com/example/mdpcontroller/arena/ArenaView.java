@@ -297,6 +297,7 @@ public class ArenaView extends View {
                         break;
 
                     case MotionEvent.ACTION_MOVE:
+                        if (scaleFactor == 1f) break;
                         translateX = x - startX;
                         translateY = y - startY;
                         double distance = Math.sqrt(Math.pow(x - (startX + previousTranslateX), 2) +
