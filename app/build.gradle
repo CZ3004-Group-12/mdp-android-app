@@ -12,7 +12,7 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-        setProperty("archivesBaseName", "MDP_Controller_V1.6")
+        setProperty("archivesBaseName", "MDP_Controller_V1.7")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
