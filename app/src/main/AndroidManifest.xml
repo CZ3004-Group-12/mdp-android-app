@@ -19,6 +19,7 @@
             android:name=".DeviceList"
             android:label="Available Devices"
             android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="adjustNothing"
             android:theme="@style/DeviceList" />
         <activity android:name=".MainActivity">
             <intent-filter>

@@ -319,12 +319,6 @@ public class ArenaView extends View {
                         previousTranslateY = translateY;
                         setObstacleEdit(event,curCell,curRect);
                         break;
-
-                    case MotionEvent.ACTION_POINTER_UP:
-                        mode = DRAG;
-                        previousTranslateX = translateX;
-                        previousTranslateY = translateY;
-                        break;
                 }
             }
         }

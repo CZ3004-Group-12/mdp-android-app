@@ -49,7 +49,7 @@ public class ExploreTabFragment extends Fragment {
         setRobotBtn.setOnClickListener(item ->{
             if(isSetObstacles){
                 isSetObstacles = false;
-                setRobotBtn.setText(R.string.set_obstacles);
+                setObstaclesBtn.setText(R.string.set_obstacles);
                 isSetRobot = btnAction(isSetRobot, setRobotBtn, "robot");
             }else{
                 isSetRobot = btnAction(isSetRobot, setRobotBtn, "robot");
