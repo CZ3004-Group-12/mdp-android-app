@@ -138,7 +138,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     private final BroadcastReceiver msgReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String fullMessage =  intent.getExtras().getString("message");
-            if (DEBUG) displayMessage(fullMessage);
+            if (DEBUG) {
+                displayMessage(fullMessage);
+                System.out.println(fullMessage);
+            }
             if (fullMessage.length() ==0) return;
             //Categorize received messages
             if (fullMessage.charAt(0) == '&') fullMessage = fullMessage.substring(1);
@@ -160,7 +163,6 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                 obstacleStatus.setText("Searching for obstacle " + curObsNum);
                                 displayMessage("Status update\nSearching for obstacle " + curObsNum);
                             }
-                            moveList.clear();
                             moveList.addAll(Arrays.asList(messageArr).subList(2, messageArr.length));
                             displayMessage("Status update\n" + "Movement Started");
                             if (timerRunnable != null && timerRunnable.startTime == 0){
@@ -176,43 +178,43 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                             int finalNumInst = numInst;
                             new Thread() {
                                 public void run() {
-                                    String prevDir = "N";
-                                    if (Robot.robotDir != null) prevDir = Robot.robotDir;
-                                    for (int i = 0; i < finalNumInst; i++) {
-                                        String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
-                                        int xCoord = (int) Double.parseDouble(args[0].trim());
-                                        int yCoord = ArenaView.ROWS - 1 - (int) Double.parseDouble(args[1].trim());
-                                        String dir = "N";
-                                        switch (args[2].trim()) {
-                                            case ("0"):
-                                                dir = "N";
-                                                break;
-                                            case ("90"):
-                                                dir = "W";
-                                                break;
-                                            case ("-90"):
-                                                dir = "E";
-                                                break;
-                                            case ("180"):
-                                                dir = "S";
-                                                break;
-                                        }
-                                        try {
+                                    try {
+                                        String prevDir = "N";
+                                        if (Robot.robotDir != null) prevDir = Robot.robotDir;
+                                        for (int i = 0; i < finalNumInst; i++) {
+                                            String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
+                                            moveList.remove(0);
+                                            int xCoord = (int) Double.parseDouble(args[0].trim());
+                                            int yCoord = ArenaView.ROWS - 1 - (int) Double.parseDouble(args[1].trim());
+                                            String dir = "N";
+                                            switch (args[2].trim()) {
+                                                case ("0"):
+                                                    dir = "N";
+                                                    break;
+                                                case ("90"):
+                                                    dir = "W";
+                                                    break;
+                                                case ("-90"):
+                                                    dir = "E";
+                                                    break;
+                                                case ("180"):
+                                                    dir = "S";
+                                                    break;
+                                            }
                                             if (dir.equals(prevDir)){
-                                                Thread.sleep(1000);
+                                                Thread.sleep(700);
                                             }
                                             else{
                                                 Thread.sleep(5000);
                                             }
                                             prevDir = dir;
-                                        } catch (InterruptedException e) {
-                                            System.out.println("Interrupted");
+                                            arena.setRobot(xCoord, yCoord, dir);
+                                            Intent intent = new Intent("message_received");
+                                            intent.putExtra("message", "ROBOT_STATUS/"+String.format(Locale.getDefault(), "(%d,%s,%s)", xCoord, args[1].trim(), dir));
+                                            context.sendBroadcast(intent);
                                         }
-                                        arena.setRobot(xCoord, yCoord, dir);
-                                        Intent intent = new Intent("message_received");
-                                        intent.putExtra("message", "ROBOT_STATUS/"+String.format(Locale.getDefault(), "(%d,%s,%s)", xCoord, args[1].trim(), dir));
-                                        context.sendBroadcast(intent);
-                                        moveList.remove(0);
+                                    } catch (Exception e) {
+                                        System.out.println(e.getMessage());
                                     }
                                 }
                             }.start();
@@ -232,7 +234,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         }
                         case("ROBOT_STATUS"):{
                             TextView robotPosTextView = findViewById(R.id.robotPosTextView);
-                            robotPosTextView.setText(messageArr[1]);
+                            if (robotPosTextView != null) robotPosTextView.setText(messageArr[1]);
                             break;
                         }
                         // Format: STATUS/<msg>
@@ -250,8 +252,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                 startStopTimer(findViewById(R.id.startExplore));
                                 TextView posTV = findViewById(R.id.robotPosTextView);
                                 TextView statTV = findViewById(R.id.obstacleStatusTextView);
-                                posTV.setText(R.string.x_y_dir);
-                                statTV.setText(R.string.idle);
+                                if (posTV != null) posTV.setText(R.string.x_y_dir);
+                                if (statTV != null) statTV.setText(R.string.idle);
                                 String timeTaken = ((TextView) findViewById(R.id.timerTextViewExplore)).getText().toString();
                                 displayMessage("Status update\n" + "Exploration complete!\nTime taken: " + timeTaken);
                             } else {
@@ -472,8 +474,10 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 timerRunnable = null;
                 toggleActivateButtons(true);
                 btService.write("STOP");
-            } else { // start timer
+            } else { // start explore
                 if (b.getId() == R.id.startExplore) {
+                    moveList.clear();
+                    //reset obstacles
                     if(arena.obstacles.size() > 0){
                         for(Obstacle obstacle: arena.obstacles){
                             obstacle.explored = false;
@@ -481,6 +485,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         }
                         arena.invalidate();
                     }
+                    //prepare timer
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewExplore));
                     curObsNum = "0";
                     b.setText(R.string.stop_explore);
@@ -528,25 +533,29 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
 
     private void toggleActivateButtons(boolean val){
         // deactivate obstacle and robot setting when robot is moving
-        if (appDataModel.getIsSetObstacles().getValue()){
-            findViewById(R.id.setObstacles).callOnClick();
-        }
-        if (appDataModel.getIsSetRobot().getValue()){
-            findViewById(R.id.setRobot).callOnClick();
-        }
-        findViewById(R.id.setObstacles).setEnabled(val);
-        findViewById(R.id.setRobot).setEnabled(val);
-        findViewById(R.id.clearObstacles).setEnabled(val);
-        // disable tabs
-        TabLayout tabLayout = findViewById(R.id.tabLayout);
-        LinearLayout tabStrip = ((LinearLayout)tabLayout.getChildAt(0));
-        tabStrip.setEnabled(val);
-        for(int i = 0; i < tabStrip.getChildCount(); i++) {
-            tabStrip.getChildAt(i).setClickable(val);
-        }
-        if (RUN_TO_END) {
-            findViewById(R.id.startExplore).setEnabled(val);
-            findViewById(R.id.startPath).setEnabled(val);
+        try{
+            if (appDataModel.getIsSetObstacles().getValue()) {
+                findViewById(R.id.setObstacles).callOnClick();
+            }
+            if (appDataModel.getIsSetRobot().getValue()) {
+                findViewById(R.id.setRobot).callOnClick();
+            }
+            findViewById(R.id.setObstacles).setEnabled(val);
+            findViewById(R.id.setRobot).setEnabled(val);
+            findViewById(R.id.clearObstacles).setEnabled(val);
+            // disable tabs
+            TabLayout tabLayout = findViewById(R.id.tabLayout);
+            LinearLayout tabStrip = ((LinearLayout) tabLayout.getChildAt(0));
+            tabStrip.setEnabled(val);
+            for (int i = 0; i < tabStrip.getChildCount(); i++) {
+                tabStrip.getChildAt(i).setClickable(val);
+            }
+            if (RUN_TO_END) {
+                findViewById(R.id.startExplore).setEnabled(val);
+                findViewById(R.id.startPath).setEnabled(val);
+            }
+        } catch (Exception e) {
+        System.out.println(e.getMessage());
         }
     }
     private void showObstacleDialog() {
@@ -569,9 +578,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     @Override
     public void dialogData(int obsIndex, String imageDir, int x, int y) {
         Cell curCell;
-        int oldObsX = arena.obstacles.get(obsIndex).cell.col;
-        int oldObsY = arena.obstacles.get(obsIndex).cell.row;
-        Cell obsCell = new Cell(oldObsX,oldObsY,"obstacle");
+        Cell oldCell = arena.obstacles.get(obsIndex).cell;
 
         for (Map.Entry<Cell, RectF> entry : arena.gridMap.entrySet()) {
             curCell = entry.getKey();
@@ -580,16 +587,16 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 curCell.setType("obstacle");
                 arena.obstacles.get(obsIndex).setImageDir(imageDir);
                 arena.obstacles.get(obsIndex).setCell(curCell);
+                oldCell.setType("");
             }else if(curCell.getCol() == x && curCell.getRow() == y && curCell.getType() != ""){
                 arena.obstacles.get(obsIndex).setImageDir(imageDir);
-                if (curCell == obsCell) {
-                    curCell.setType("");
-                }
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        "Grid is already occupied",
-                        Toast.LENGTH_SHORT);
+                if (curCell != oldCell) {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            "Grid is already occupied",
+                            Toast.LENGTH_SHORT);
 
-                toast.show();
+                    toast.show();
+                }
             }
         }
         arena.invalidate();
