@@ -66,6 +66,9 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     ViewPager tabViewPager;
     MainAdapter adapter;
 
+
+    private boolean MOVING=false;
+
     public String robotDir;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,11 +182,20 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                             new Thread() {
                                 public void run() {
                                     try {
+                                        while(MOVING) sleep(100);
+                                        MOVING = true;
                                         String prevDir = "N";
                                         if (Robot.robotDir != null) prevDir = Robot.robotDir;
+                                        List<String> newMoveList = new ArrayList<>();
+                                        if (finalNumInst > 0) {
+                                            for (int i=0; i<finalNumInst;i++){
+                                                newMoveList.add(moveList.get(i));
+                                            }
+                                            moveList.subList(0, finalNumInst).clear();
+                                        }
+                                        else return;
                                         for (int i = 0; i < finalNumInst; i++) {
-                                            String[] args = moveList.get(0).replaceAll("\\(|\\)", "").split(",");
-                                            moveList.remove(0);
+                                            String[] args = newMoveList.get(0).replaceAll("\\(|\\)", "").split(",");
                                             int xCoord = (int) Double.parseDouble(args[0].trim());
                                             int yCoord = ArenaView.ROWS - 1 - (int) Double.parseDouble(args[1].trim());
                                             String dir = "N";
@@ -212,7 +224,9 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                             Intent intent = new Intent("message_received");
                                             intent.putExtra("message", "ROBOT_STATUS/"+String.format(Locale.getDefault(), "(%d,%s,%s)", xCoord, args[1].trim(), dir));
                                             context.sendBroadcast(intent);
+                                            newMoveList.remove(0);
                                         }
+                                        MOVING = false;
                                     } catch (Exception e) {
                                         System.out.println(e.getMessage());
                                     }
@@ -462,7 +476,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
     }
 
     public void startStopTimer(View view){
-        if (BluetoothService.getBtStatus() == BluetoothService.BluetoothStatus.CONNECTED) {
+        try {
             Button b = (Button) view;
             if (timerRunnable != null) { // timer was running, reset the timer and send stop command
                 if (b.getId() == R.id.startExplore) {
@@ -474,6 +488,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 timerRunnable = null;
                 toggleActivateButtons(true);
                 btService.write("STOP");
+                TextView rbTV = findViewById(R.id.obstacleStatusTextView);
+                rbTV.setText(R.string.idle);
             } else { // start explore
                 if (b.getId() == R.id.startExplore) {
                     moveList.clear();
@@ -525,9 +541,8 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                 timerRunnable.startTime = 0;
                 toggleActivateButtons(false);
             }
-        } else {
-            // disable start task if bluetooth not connected
-            Toast.makeText(this, "Bluetooth not connected!", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
