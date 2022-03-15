@@ -272,7 +272,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                                 displayMessage("Status update\n" + "Exploration complete!\nTime taken: " + timeTaken);
                             } else {
                                 startStopTimer(findViewById(R.id.startPath));
-                                String timeTaken = ((TextView) findViewById(R.id.timerTextViewExplore)).getText().toString();
+                                String timeTaken = ((TextView) findViewById(R.id.timerTextViewPath)).getText().toString();
                                 displayMessage("Status update\n" + "Fastest path complete!\nTime taken: " + timeTaken);
                             }
                             break;
@@ -529,6 +529,7 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                         xCoord = curCell.col;
                         yCoord = ArenaView.ROWS - 1 - curCell.row; // invert y coordinates since algorithm uses bottom left as origin
                         cmd.append(String.format(Locale.getDefault(), "/(%02d,%02d,%02d,%s)", i, xCoord, yCoord, dir));
+                        timerRunnable.startTime = 0;
                     }
                     btService.write(cmd.toString());
                     TextView rbTV = findViewById(R.id.obstacleStatusTextView);
@@ -537,8 +538,9 @@ public class MainActivity<ActivityResultLauncher> extends AppCompatActivity impl
                     timerRunnable = new TimerRunnable(findViewById(R.id.timerTextViewPath));
                     btService.write("START/PATH");
                     b.setText(R.string.stop_fastest_path);
+                    timerRunnable.startTime = System.currentTimeMillis();
+                    timerHandler.postDelayed(timerRunnable, 0);
                 }
-                timerRunnable.startTime = 0;
                 toggleActivateButtons(false);
             }
         } catch (Exception e) {
